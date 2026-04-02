@@ -751,7 +751,15 @@ function openBrinks() {
   const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
   const isAndroid = /android/i.test(ua);
   if (isIOS) {
-    window.location.href = 'https://apps.apple.com/us/app/brinks-24seven/id1327564045';
+    const appStore = 'https://apps.apple.com/us/app/brinks-24seven/id1327564045';
+    const deepLink = 'brinks24seven://';
+    const fallbackTimer = setTimeout(() => {
+      window.location.href = appStore;
+    }, 2000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearTimeout(fallbackTimer);
+    }, { once: true });
+    window.location.href = deepLink;
   } else if (isAndroid) {
     window.location.href = 'https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven';
   } else {
