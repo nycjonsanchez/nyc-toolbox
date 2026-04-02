@@ -747,12 +747,19 @@ function setDate() {
     new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();
 }
 function openBrinks() {
-  const ua=navigator.userAgent||navigator.vendor||window.opera;
-  const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
-  const isAndroid=/android/i.test(ua);
-  if(isIOS) window.location='https://apps.apple.com/us/app/brinks-27seven/id1493685775';
-  else if(isAndroid) window.location='https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven';
-  else window.open('https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven','_blank');
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /android/i.test(ua);
+  if (isIOS) {
+    window.location = 'brinks27seven://';
+    setTimeout(() => {
+      window.location = 'https://apps.apple.com/us/app/brinks-27seven/id1493685775';
+    }, 1500);
+  } else if (isAndroid) {
+    window.location = 'https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven';
+  } else {
+    window.open('https://prod.identity.brinksinc.com/brinkscob2c.onmicrosoft.com/B2C_1A_signup_signin_saml/samlp/sso/login', '_blank');
+  }
 }
 </script>
 </body>
