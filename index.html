@@ -481,6 +481,150 @@ html, body {
 .ti-submitting { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9000; flex-direction: column; gap: 12px; }
 .ti-submitting-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: spin .65s linear infinite; }
 .ti-submitting-text { color: #fff; font-size: 14px; font-weight: 600; }
+/* ── MANAGER PORTAL ── */
+.mp-stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 16px; }
+@media (min-width: 768px) { .mp-stat-grid { grid-template-columns: repeat(4,1fr); } }
+.mp-stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.mp-stat-label { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+.mp-stat-val { font-size: 24px; font-weight: 800; }
+
+.mp-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.mp-tab {
+  flex: 1; padding: 10px 0; background: none; border: none;
+  border-bottom: 2.5px solid transparent; color: var(--muted);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: all .15s;
+}
+.mp-tab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
+.mp-tab-badge {
+  display: inline-block; background: var(--red); color: #fff;
+  border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: 700; margin-left: 5px;
+}
+
+.mp-filters { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.mp-filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.mp-chip {
+  padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 12px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all .1s;
+  font-family: 'Inter', sans-serif;
+}
+.mp-chip.active { border-color: #f5c2c2; background: #fff0f0; color: var(--red); font-weight: 700; }
+.mp-search {
+  width: 100%; padding: 11px 14px; border-radius: 12px; box-sizing: border-box;
+  background: var(--card); border: 1.5px solid var(--border);
+  font-size: 14px; color: var(--text); outline: none;
+  font-family: 'Inter', sans-serif;
+}
+.mp-search:focus { border-color: var(--red); }
+.mp-store-filter-wrap { position: relative; }
+.mp-store-filter {
+  width: 100%; padding: 11px 36px 11px 14px; border-radius: 10px; box-sizing: border-box;
+  background: #fafafa; border: 1.5px solid var(--border);
+  font-size: 14px; color: var(--text); outline: none;
+  font-family: 'Inter', sans-serif; -webkit-appearance: none;
+}
+.mp-store-filter:focus { border-color: var(--red); }
+.mp-store-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--muted); pointer-events: none; }
+
+.mp-card-list { display: flex; flex-direction: column; gap: 8px; }
+@media (min-width: 900px) { .mp-card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+
+.mp-sub-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 13px 14px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow .15s; position: relative; overflow: hidden;
+}
+.mp-sub-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.10); }
+.mp-sub-card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.mp-sub-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-left: 8px; }
+.mp-sub-model { font-weight: 700; font-size: 14px; }
+.mp-sub-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.mp-sub-date { font-size: 11px; color: #aeaeb2; }
+.mp-sub-tags { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 8px; }
+.mp-tag {
+  padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+}
+.mp-tag.green { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
+.mp-tag.red   { background: #fff0f0; border-color: #f5c2c2; color: var(--red); }
+.mp-tag.yellow{ background: #fffbeb; border-color: #fde68a; color: #d97706; }
+
+.mp-status-pill {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 20px; font-size: 10px; font-weight: 700;
+}
+.mp-price { font-size: 16px; font-weight: 800; color: #16a34a; }
+
+/* Detail view */
+.mp-detail { display: flex; flex-direction: column; gap: 12px; }
+.mp-detail-back {
+  background: none; border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); cursor: pointer; padding: 7px 14px; font-size: 12px;
+  font-weight: 600; font-family: 'Inter', sans-serif;
+}
+.mp-section-card {
+  background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+  overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.mp-section-head {
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+}
+.mp-section-body { padding: 14px; }
+.mp-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (min-width: 768px) { .mp-detail-grid { grid-template-columns: repeat(3,1fr); } }
+.mp-detail-cell {
+  background: var(--surface); border-radius: 10px; padding: 10px 12px;
+}
+.mp-detail-cell-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+.mp-detail-cell-val { font-size: 13px; font-weight: 700; }
+
+.mp-photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 768px) { .mp-photos-grid { grid-template-columns: repeat(4,1fr); } }
+.mp-photo-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+.mp-photo-img { width: 100%; border-radius: 10px; cursor: zoom-in; border: 1px solid var(--border); display: block; }
+.mp-photo-missing {
+  aspect-ratio: 3/4; border-radius: 10px; background: #fff0f0;
+  border: 2px dashed #f5c2c2; display: flex; align-items: center;
+  justify-content: center; flex-direction: column; gap: 4px;
+}
+
+.mp-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (min-width: 768px) { .mp-action-grid { grid-template-columns: repeat(4,1fr); } }
+.mp-action-btn {
+  padding: 13px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all .15s; font-family: 'Inter', sans-serif;
+}
+.mp-note-input {
+  width: 100%; padding: 11px 14px; border-radius: 10px; box-sizing: border-box;
+  background: #fafafa; border: 1.5px solid var(--border);
+  font-size: 14px; color: var(--text); outline: none;
+  font-family: 'Inter', sans-serif; resize: vertical;
+}
+.mp-note-input:focus { border-color: var(--red); }
+
+.mp-feedback {
+  border-radius: 12px; padding: 12px 16px; font-size: 13px; font-weight: 600;
+}
+.mp-empty { text-align: center; padding: 60px 20px; }
+.mp-empty-icon { font-size: 44px; margin-bottom: 12px; }
+.mp-empty-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.mp-empty-sub { font-size: 13px; color: var(--muted); }
+
+.mp-loading { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; }
+
+/* Lightbox */
+#mp-lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 9999;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+#mp-lightbox img { max-width: 100%; max-height: 90vh; border-radius: 14px; }
+#mp-lightbox-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 28px; cursor: pointer; font-weight: 700; line-height: 1; }
 </style>
 </head>
 <body>
@@ -532,6 +676,9 @@ html, body {
   <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
     <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
   </div>
+  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager')">
+    <span class="sidebar-icon">🔍</span><span class="sidebar-label">Verification Portal</span>
+  </div>
 </div>
 
 <div class="content">
@@ -565,6 +712,11 @@ html, body {
     <div class="section-header"><div class="section-title">KPI Reference</div></div>
     <div class="kpi-section-label">VERIZON CORE METRICS</div>
     <div class="kpi-grid" id="kpi-grid"></div>
+  </div>
+
+  <!-- ── MANAGER VERIFICATION PORTAL ── -->
+  <div class="section" id="section-manager">
+    <div id="mp-root" style="padding:0 0 32px;"></div>
   </div>
 
   <div class="section" id="section-tools">
@@ -731,6 +883,9 @@ html, body {
     <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
       <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
     </div>
+    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager')">
+      <span class="drawer-icon">🔍</span><span class="drawer-label">Verification Portal</span><span class="drawer-arrow">›</span>
+    </div>
   </div>
 </div>
 
@@ -739,6 +894,12 @@ html, body {
 </button>
 
 </div>
+</div>
+
+<!-- ── LIGHTBOX ── -->
+<div id="mp-lightbox" style="display:none;" onclick="mpCloseLightbox()">
+  <img id="mp-lightbox-img" src="" alt="photo" />
+  <div id="mp-lightbox-close">✕</div>
 </div>
 
 <!-- ── FIREBASE ── -->
@@ -1214,6 +1375,459 @@ function openBrinks() {
   else if(isAndroid) window.location='https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven';
   else window.open('https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven','_blank');
 }
+// ══════════════════════════════════════════════════════════════════════════════
+// MANAGER VERIFICATION PORTAL
+// ══════════════════════════════════════════════════════════════════════════════
+
+const MP_STATUS_CONFIG = {
+  pending:      { label:'Pending',      color:'#d97706', bg:'#fffbeb', border:'#fde68a',  icon:'⏳' },
+  needs_review: { label:'Needs Review', color:'#ea580c', bg:'#fff7ed', border:'#fed7aa',  icon:'⚠️' },
+  verified:     { label:'Verified',     color:'#16a34a', bg:'#f0fdf4', border:'#bbf7d0',  icon:'✅' },
+  rejected:     { label:'Rejected',     color:'#cd040b', bg:'#fff0f0', border:'#f5c2c2',  icon:'❌' },
+};
+
+let mpState = {
+  data:        [],
+  tab:         'queue',    // 'queue' | 'archive'
+  selected:    null,
+  noteInput:   '',
+  queueStore:  'All',
+  queueStatus: 'all',
+  archSearch:  '',
+  archStore:   'All',
+  archStatus:  'all',
+  loading:     true,
+  saving:      false,
+  justActed:   null,
+  error:       null,
+};
+
+// ── Fetch submissions from Apps Script ────────────────────────────────────────
+async function mpLoad() {
+  mpState.loading = true;
+  mpState.error   = null;
+  mpRender();
+  try {
+    const res  = await fetch(TRADEIN_URL + '?action=getTradeIns');
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.error || 'Load failed');
+    mpState.data    = json.data || [];
+    mpState.loading = false;
+  } catch (err) {
+    mpState.error   = err.message;
+    mpState.loading = false;
+  }
+  mpRender();
+}
+
+// ── Write status update back to sheet ─────────────────────────────────────────
+async function mpSaveStatus(id, status, note) {
+  mpState.saving = true;
+  mpRender();
+  try {
+    const res  = await fetch(TRADEIN_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify({ action:'updateStatus', id, status, note })
+    });
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.error || 'Save failed');
+    // update local state
+    mpState.data = mpState.data.map(r => r.id === id ? { ...r, status, managerNote:note, reviewedBy:'Manager', reviewDate:new Date().toLocaleDateString() } : r);
+    if (mpState.selected && mpState.selected.id === id) {
+      mpState.selected = { ...mpState.selected, status, managerNote:note };
+      // auto-close detail after archiving
+      if (status === 'verified' || status === 'rejected') {
+        mpState.justActed = status;
+        setTimeout(() => { mpState.selected = null; mpState.justActed = null; mpRender(); }, 1200);
+      } else {
+        mpState.justActed = status;
+        setTimeout(() => { mpState.justActed = null; mpRender(); }, 1500);
+      }
+    }
+  } catch (err) {
+    alert('Save failed: ' + err.message);
+  }
+  mpState.saving = false;
+  mpRender();
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function mpOpenLightbox(src) {
+  document.getElementById('mp-lightbox-img').src = src;
+  document.getElementById('mp-lightbox').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function mpCloseLightbox() {
+  document.getElementById('mp-lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── Status pill HTML ──────────────────────────────────────────────────────────
+function mpStatusPill(status) {
+  const sc = MP_STATUS_CONFIG[status] || MP_STATUS_CONFIG.pending;
+  return `<span class="mp-status-pill" style="background:${sc.bg};border:1px solid ${sc.border};color:${sc.color};">${sc.icon} ${sc.label}</span>`;
+}
+
+// ── Tag HTML ──────────────────────────────────────────────────────────────────
+function mpTag(text, color) {
+  return `<span class="mp-tag${color?' '+color:''}">${text}</span>`;
+}
+
+// ── Battery helpers ───────────────────────────────────────────────────────────
+function mpBattDot(b) { return b >= 80 ? '🟢' : b >= 50 ? '🟡' : '🔴'; }
+function mpBattColor(b) { return b >= 80 ? 'green' : b >= 50 ? 'yellow' : 'red'; }
+
+// ── Submission card HTML ──────────────────────────────────────────────────────
+function mpSubCardHtml(entry, idx) {
+  const sc         = MP_STATUS_CONFIG[entry.status] || MP_STATUS_CONFIG.pending;
+  const photoCount = [entry.photoFront, entry.photoLcd, entry.photoBack, entry.photoInfo].filter(Boolean).length;
+  const battDot    = mpBattDot(entry.battery);
+  const battColor  = mpBattColor(entry.battery);
+  const damage     = Array.isArray(entry.damage) ? entry.damage : (entry.damage ? entry.damage.split(',').map(s=>s.trim()).filter(Boolean) : []);
+  const isLocked   = !(entry.locked||'').startsWith('🔓');
+
+  return `
+  <div class="mp-sub-card" onclick="mpOpenDetail(${idx})" style="padding-left:0;">
+    <div class="mp-sub-card-accent" style="background:${sc.color};"></div>
+    <div class="mp-sub-card-top">
+      <div style="flex:1;margin-right:10px;">
+        <div class="mp-sub-model">${entry.model||'—'}</div>
+        <div class="mp-sub-meta">${entry.repName||'—'} · ${entry.store||'—'}</div>
+        <div class="mp-sub-date">${entry.timestamp||entry.date||'—'}</div>
+      </div>
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        ${mpStatusPill(entry.status)}
+        ${entry.purchasePrice && parseFloat(entry.purchasePrice) > 0 ? `<span class="mp-price">$${parseFloat(entry.purchasePrice).toFixed(2)}</span>` : ''}
+      </div>
+    </div>
+    <div class="mp-sub-tags">
+      ${mpTag('…'+(entry.imeiLast4||'????'))}
+      ${mpTag(entry.storage||'—')}
+      ${mpTag(battDot+' '+(entry.battery||0)+'%', battColor)}
+      ${mpTag(entry.locked||'Unknown', isLocked ? 'red' : 'green')}
+      ${damage.length > 0 ? mpTag('⚠️ '+damage.join(', '),'red') : mpTag('No Damage','green')}
+      ${mpTag('📷 '+photoCount+'/4', photoCount===4?'green':'red')}
+    </div>
+    ${entry.managerNote ? `<div style="margin-top:8px;padding:7px 10px 7px 18px;background:var(--surface);border-radius:8px;font-size:11px;color:var(--muted);border-left:2px solid var(--border);">${entry.managerNote}</div>` : ''}
+  </div>`;
+}
+
+// ── Filtered data helpers ─────────────────────────────────────────────────────
+function mpQueue() {
+  return mpState.data.filter(s => {
+    const st = s.status || 'pending';
+    if (!['pending','needs_review'].includes(st)) return false;
+    if (mpState.queueStore !== 'All' && s.store !== mpState.queueStore) return false;
+    if (mpState.queueStatus !== 'all' && st !== mpState.queueStatus) return false;
+    return true;
+  });
+}
+function mpArchive() {
+  return mpState.data.filter(s => {
+    const st = s.status || 'pending';
+    if (!['verified','rejected'].includes(st)) return false;
+    if (mpState.archStore !== 'All' && s.store !== mpState.archStore) return false;
+    if (mpState.archStatus !== 'all' && st !== mpState.archStatus) return false;
+    if (mpState.archSearch) {
+      const q = mpState.archSearch.toLowerCase();
+      return (s.model||'').toLowerCase().includes(q) ||
+             (s.repName||'').toLowerCase().includes(q) ||
+             (s.store||'').toLowerCase().includes(q) ||
+             (s.imeiLast4||'').includes(q);
+    }
+    return true;
+  });
+}
+function mpStats() {
+  const d = mpState.data;
+  return {
+    pending:      d.filter(s => (s.status||'pending') === 'pending').length,
+    needs_review: d.filter(s => s.status === 'needs_review').length,
+    verified:     d.filter(s => s.status === 'verified').length,
+    rejected:     d.filter(s => s.status === 'rejected').length,
+    totalPaid:    d.filter(s => s.status === 'verified').reduce((a,s) => a + (parseFloat(s.purchasePrice)||0), 0),
+  };
+}
+function mpUniqueStores() {
+  const seen = new Set();
+  mpState.data.forEach(s => { if (s.store) seen.add(s.store); });
+  return ['All', ...Array.from(seen).sort()];
+}
+
+// ── Store select HTML ─────────────────────────────────────────────────────────
+function mpStoreSelect(id, val) {
+  const stores = mpUniqueStores();
+  return `
+  <div class="mp-store-filter-wrap">
+    <select class="mp-store-filter" id="${id}" onchange="mpOnStoreChange('${id}',this.value)">
+      ${stores.map(s => `<option value="${s}"${s===val?' selected':''}>${s==='All'?'All Stores':s}</option>`).join('')}
+    </select>
+    <span class="mp-store-arrow">▼</span>
+  </div>`;
+}
+function mpOnStoreChange(id, val) {
+  if (id === 'mp-queue-store')  { mpState.queueStore  = val; }
+  if (id === 'mp-arch-store')   { mpState.archStore   = val; }
+  mpRender();
+}
+
+// ── Open detail ───────────────────────────────────────────────────────────────
+function mpOpenDetail(idx) {
+  // find the entry — idx is position in filtered list
+  const list = mpState.tab === 'queue' ? mpQueue() : mpArchive();
+  mpState.selected  = list[idx];
+  mpState.noteInput = mpState.selected.managerNote || '';
+  mpState.justActed = null;
+  mpRender();
+  document.getElementById('mp-root').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Detail view HTML ──────────────────────────────────────────────────────────
+function mpDetailHtml(entry) {
+  const sc      = MP_STATUS_CONFIG[entry.status] || MP_STATUS_CONFIG.pending;
+  const battDot = mpBattDot(entry.battery);
+  const damage  = Array.isArray(entry.damage) ? entry.damage : (entry.damage ? entry.damage.split(',').map(s=>s.trim()).filter(Boolean) : []);
+  const photos  = [
+    { label:'Front',       src: entry.photoFront },
+    { label:'LCD Display', src: entry.photoLcd   },
+    { label:'Back',        src: entry.photoBack  },
+    { label:'IMEI / Info', src: entry.photoInfo  },
+  ];
+  const fromArchive = ['verified','rejected'].includes(entry.status);
+
+  const actionBtns = [
+    { status:'verified',     label:'✅ Verify',       bg:'#f0fdf4', border:'#bbf7d0', color:'#16a34a' },
+    { status:'needs_review', label:'⚠️ Needs Review', bg:'#fff7ed', border:'#fed7aa', color:'#ea580c' },
+    { status:'rejected',     label:'❌ Reject',        bg:'#fff0f0', border:'#f5c2c2', color:'#cd040b' },
+    { status:'pending',      label:'⏳ Reset Pending', bg:'#fffbeb', border:'#fde68a', color:'#d97706' },
+  ].map(btn => {
+    const isActive = entry.status === btn.status;
+    return `<button class="mp-action-btn" onclick="mpAct('${btn.status}')"
+      style="${isActive ? `background:${btn.bg};border-color:${btn.border};color:${btn.color};` : ''}"
+      onmouseover="this.style.background='${btn.bg}';this.style.color='${btn.color}';this.style.borderColor='${btn.border}'"
+      onmouseout="if('${entry.status}'!='${btn.status}'){this.style.background='';this.style.color='';this.style.borderColor=''}"
+    >${btn.label}</button>`;
+  }).join('');
+
+  return `
+  <div class="mp-detail">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button class="mp-detail-back" onclick="mpBack()">← ${fromArchive?'Archive':'Queue'}</button>
+      ${mpStatusPill(entry.status)}
+      ${entry.purchasePrice && parseFloat(entry.purchasePrice) > 0 ? `<span class="mp-price" style="margin-left:auto;">$${parseFloat(entry.purchasePrice).toFixed(2)}</span>` : ''}
+    </div>
+
+    <div class="mp-section-card">
+      <div class="mp-section-head">Device Details</div>
+      <div class="mp-section-body">
+        <div style="font-size:18px;font-weight:800;margin-bottom:3px;">${entry.model||'—'}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+          <strong style="color:var(--text);">${entry.repName||'—'}</strong> · ${entry.store||'—'} · ${entry.timestamp||entry.date||'—'}
+        </div>
+        <div class="mp-detail-grid">
+          ${[
+            ['IMEI Last 4', '…'+(entry.imeiLast4||'????')],
+            ['Storage',     entry.storage||'—'],
+            ['Battery',     battDot+' '+(entry.battery||0)+'%'],
+            ['Lock Status', entry.locked||'—'],
+            ['Amount Paid', entry.purchasePrice && parseFloat(entry.purchasePrice) > 0 ? '$'+parseFloat(entry.purchasePrice).toFixed(2) : 'No cash'],
+            ['Sub ID',      entry.id||'—'],
+          ].map(([k,v]) => `<div class="mp-detail-cell"><div class="mp-detail-cell-label">${k}</div><div class="mp-detail-cell-val">${v}</div></div>`).join('')}
+        </div>
+        ${damage.length > 0 ? `
+        <div style="margin-top:12px;">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;">Reported Damage</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">${damage.map(d => mpTag('⚠️ '+d,'red')).join('')}</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div class="mp-section-card">
+      <div class="mp-section-head">Device Photos — tap to enlarge</div>
+      <div class="mp-section-body">
+        <div class="mp-photos-grid">
+          ${photos.map(p => `
+          <div>
+            <div class="mp-photo-label">${p.label}</div>
+            ${p.src
+              ? `<img class="mp-photo-img" src="${p.src}" alt="${p.label}" onclick="mpOpenLightbox('${p.src.replace(/'/g,'%27')}')" loading="lazy" />`
+              : `<div class="mp-photo-missing"><span style="font-size:20px;">❌</span><span style="font-size:10px;color:var(--red);font-weight:700;">MISSING</span></div>`
+            }
+          </div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">📌 Tap any photo to view full size</div>
+      </div>
+    </div>
+
+    <div class="mp-section-card">
+      <div class="mp-section-head">Manager Note</div>
+      <div class="mp-section-body">
+        <textarea class="mp-note-input" id="mp-note-input" rows="3"
+          placeholder="Add verification note, flag a discrepancy, or reason for rejection…"
+          oninput="mpState.noteInput=this.value"
+        >${entry.managerNote||''}</textarea>
+      </div>
+    </div>
+
+    <div class="mp-action-grid">${actionBtns}</div>
+
+    ${mpState.justActed ? (() => {
+      const sc = MP_STATUS_CONFIG[mpState.justActed];
+      return `<div class="mp-feedback" style="background:${sc.bg};border:1px solid ${sc.border};color:${sc.color};">
+        ${sc.icon} Marked as <strong>${sc.label}</strong>
+        ${['verified','rejected'].includes(mpState.justActed) ? '<span style="font-weight:400;opacity:.8;"> — moving to Archive</span>' : ''}
+        ${mpState.noteInput ? `<div style="margin-top:4px;font-size:11px;font-weight:400;opacity:.8;">Note saved.</div>` : ''}
+      </div>`;
+    })() : ''}
+
+    ${mpState.saving ? `<div style="text-align:center;padding:8px;font-size:13px;color:var(--muted);">Saving…</div>` : ''}
+  </div>`;
+}
+
+function mpAct(status) {
+  if (mpState.saving) return;
+  const note = document.getElementById('mp-note-input') ? document.getElementById('mp-note-input').value : mpState.noteInput;
+  mpState.noteInput = note;
+  mpSaveStatus(mpState.selected.id, status, note);
+}
+function mpBack() {
+  mpState.selected  = null;
+  mpState.justActed = null;
+  mpRender();
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+function mpRender() {
+  const root = document.getElementById('mp-root');
+  if (!root) return;
+
+  if (mpState.loading) {
+    root.innerHTML = `<div class="mp-loading"><div style="font-size:28px;margin-bottom:10px;">⏳</div>Loading submissions…</div>`;
+    return;
+  }
+  if (mpState.error) {
+    root.innerHTML = `
+    <div style="padding:20px;">
+      <div class="mp-section-card">
+        <div class="mp-section-body" style="text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
+          <div style="font-weight:700;margin-bottom:6px;">Could not load submissions</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${mpState.error}</div>
+          <button onclick="mpLoad()" style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Retry</button>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  const stats   = mpStats();
+  const queue   = mpQueue();
+  const archive = mpArchive();
+  const qCount  = stats.pending + stats.needs_review;
+
+  // Header
+  let html = `
+  <div style="background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px 0;position:sticky;top:59px;z-index:10;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;">Verification Portal</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px;">Trade-in review &amp; archive</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${qCount > 0 ? `<span style="background:#fff0f0;border:1px solid #f5c2c2;color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">${qCount} need action</span>` : ''}
+        <button onclick="mpLoad()" title="Refresh" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:14px;font-family:inherit;" ${mpState.loading?'disabled':''}>↻</button>
+      </div>
+    </div>
+    <div class="mp-tabs">
+      <button class="mp-tab${mpState.tab==='queue'?' active':''}" onclick="mpSetTab('queue')">
+        Active Queue${qCount > 0 ? `<span class="mp-tab-badge">${qCount}</span>` : ''}
+      </button>
+      <button class="mp-tab${mpState.tab==='archive'?' active':''}" onclick="mpSetTab('archive')">
+        Archive <span style="font-size:10px;color:var(--muted);">(${stats.verified+stats.rejected})</span>
+      </button>
+    </div>
+  </div>
+  <div style="padding:16px;">`;
+
+  if (mpState.selected) {
+    html += mpDetailHtml(mpState.selected);
+  } else if (mpState.tab === 'queue') {
+    // Stats row
+    html += `
+    <div class="mp-stat-grid">
+      ${[
+        { label:'⏳ Pending',      val:stats.pending,      color:'#d97706' },
+        { label:'⚠️ Needs Review', val:stats.needs_review, color:'#ea580c' },
+        { label:'✅ Verified',     val:stats.verified,     color:'#16a34a' },
+        { label:'💵 Paid Out',     val:'$'+stats.totalPaid.toFixed(0), color:'#16a34a' },
+      ].map(c => `<div class="mp-stat-card" style="border-top:3px solid ${c.color};">
+        <div class="mp-stat-label">${c.label}</div>
+        <div class="mp-stat-val" style="color:${c.color};">${c.val}</div>
+      </div>`).join('')}
+    </div>
+    <div class="mp-filters">
+      <div class="mp-filter-chips">
+        ${[['all','All'],['pending','⏳ Pending'],['needs_review','⚠️ Needs Review']].map(([v,l]) =>
+          `<button class="mp-chip${mpState.queueStatus===v?' active':''}" onclick="mpSetQueueStatus('${v}')">${l}</button>`
+        ).join('')}
+      </div>
+      ${mpStoreSelect('mp-queue-store', mpState.queueStore)}
+    </div>`;
+    if (queue.length === 0) {
+      html += `<div class="mp-empty"><div class="mp-empty-icon">✅</div><div class="mp-empty-title">Queue is clear</div><div class="mp-empty-sub">All submissions processed. Check Archive for history.</div></div>`;
+    } else {
+      html += `<div class="mp-card-list">${queue.map((e,i) => mpSubCardHtml(e,i)).join('')}</div>`;
+    }
+  } else {
+    // Archive tab
+    html += `
+    <div class="mp-filters">
+      <input class="mp-search" placeholder="Search by model, rep, store, or IMEI…" value="${mpState.archSearch}" oninput="mpSetArchSearch(this.value)" />
+      <div class="mp-filter-chips">
+        ${[['all','All'],['verified','✅ Verified'],['rejected','❌ Rejected']].map(([v,l]) =>
+          `<button class="mp-chip${mpState.archStatus===v?' active':''}" onclick="mpSetArchStatus('${v}')">${l}</button>`
+        ).join('')}
+      </div>
+      ${mpStoreSelect('mp-arch-store', mpState.archStore)}
+    </div>
+    <div style="background:var(--card);border-radius:10px;padding:9px 12px;border:1px solid var(--border);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;color:var(--muted);"><strong style="color:var(--text);">${archive.length}</strong> archived record${archive.length!==1?'s':''}</span>
+      <span style="font-size:12px;color:#16a34a;font-weight:700;">$${archive.filter(s=>s.status==='verified').reduce((a,s)=>a+(parseFloat(s.purchasePrice)||0),0).toFixed(2)} confirmed</span>
+    </div>`;
+    if (archive.length === 0) {
+      html += `<div class="mp-empty"><div class="mp-empty-icon">📦</div><div class="mp-empty-title">No archived records</div><div class="mp-empty-sub">Verified and rejected submissions appear here.</div></div>`;
+    } else {
+      html += `<div class="mp-card-list">${archive.map((e,i) => mpSubCardHtml(e,i)).join('')}</div>`;
+    }
+  }
+
+  html += '</div>';
+  root.innerHTML = html;
+
+  // Restore note textarea value after re-render
+  if (mpState.selected) {
+    const ta = document.getElementById('mp-note-input');
+    if (ta) ta.value = mpState.noteInput;
+  }
+}
+
+function mpSetTab(tab)         { mpState.tab = tab; mpState.selected = null; mpRender(); }
+function mpSetQueueStatus(v)   { mpState.queueStatus = v; mpRender(); }
+function mpSetArchStatus(v)    { mpState.archStatus  = v; mpRender(); }
+function mpSetArchSearch(v)    { mpState.archSearch  = v; mpRender(); }
+
+// ── Hook into switchTab to load data on first open ────────────────────────────
+const _origSwitchTab = switchTab;
+switchTab = function(tab) {
+  _origSwitchTab(tab);
+  if (tab === 'manager' && !mpState.data.length && !mpState.loading) {
+    mpLoad();
+  }
+  if (tab === 'manager') {
+    mpRender();
+  }
+};
 </script>
 </body>
 </html>
