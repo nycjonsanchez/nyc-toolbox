@@ -1408,8 +1408,17 @@ async function mpLoad() {
   mpState.error   = null;
   mpRender();
   try {
-    const res  = await fetch(TRADEIN_URL + '?action=getTradeIns');
-    const json = await res.json();
+    const res  = await fetch(TRADEIN_URL + '?action=getTradeIns', {
+      method: 'GET',
+      redirect: 'follow',
+    });
+    const text = await res.text();
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch(parseErr) {
+      throw new Error('Bad response from server. Check Apps Script deployment.');
+    }
     if (json.status !== 'ok') throw new Error(json.error || 'Load failed');
     mpState.data    = json.data || [];
     mpState.loading = false;
@@ -1821,11 +1830,12 @@ function mpSetArchSearch(v)    { mpState.archSearch  = v; mpRender(); }
 const _origSwitchTab = switchTab;
 switchTab = function(tab) {
   _origSwitchTab(tab);
-  if (tab === 'manager' && !mpState.data.length && !mpState.loading) {
-    mpLoad();
-  }
   if (tab === 'manager') {
-    mpRender();
+    if (!mpState.data.length && !mpState.loading) {
+      mpLoad();
+    } else {
+      mpRender();
+    }
   }
 };
 </script>
