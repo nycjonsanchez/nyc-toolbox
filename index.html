@@ -435,7 +435,7 @@ html, body {
 .tradein-back-btn:active { background: var(--red-dim); }
 .tradein-portal-title { font-size: 15px; font-weight: 800; color: var(--text); }
 .ti-cards { padding: 16px 16px 0; display: flex; flex-direction: column; gap: 10px; }
-.ti-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.ti-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
 .ti-card-head { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 800; color: var(--text); text-transform: uppercase; }
 .ti-card-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .ti-field { display: flex; flex-direction: column; gap: 6px; }
@@ -451,7 +451,12 @@ html, body {
 .ti-batt-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
 .ti-store-wrap { position: relative; }
 .ti-dropdown-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--muted); pointer-events: none; }
-.ti-store-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 100; max-height: 200px; overflow-y: auto; }
+.ti-store-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 999;
+  max-height: 220px; overflow-y: auto;
+}
 .ti-store-opt { padding: 13px 14px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); color: var(--text); }
 .ti-store-opt:last-child { border-bottom: none; }
 .ti-store-opt:active, .ti-store-opt:hover { background: var(--red-dim); }
@@ -856,7 +861,7 @@ async function fetchStores() {
   try {
     const res  = await fetch(SHEET_URL);
     const data = await res.json();
-    storeData  = data.filter(s => s.name);
+    storeData  = data.filter(s => s['name Non-WZ'] || s.name);
     renderStores(storeData);
     dot.className = 'sync-status-dot ok';
     const now = new Date();
@@ -876,10 +881,10 @@ function filterStores() {
   const q = document.getElementById('store-search').value.toLowerCase();
   if (!q) { renderStores(storeData); return; }
   renderStores(storeData.filter(s =>
-    (s.name        ||'').toLowerCase().includes(q) ||
-    (s.address     ||'').toLowerCase().includes(q) ||
-    (s.phone       ||'').toLowerCase().includes(q) ||
-    (s['Store id'] ||'').toString().toLowerCase().includes(q)
+    (s['name Non-WZ'] ||s.name  ||'').toLowerCase().includes(q) ||
+    (s.address        ||'').toLowerCase().includes(q) ||
+    (s.phone          ||'').toLowerCase().includes(q) ||
+    (s['Store id']    ||'').toString().toLowerCase().includes(q)
   ));
 }
 
@@ -917,21 +922,23 @@ const KPIS = [
 
 function renderStores(list) {
   document.getElementById('store-count').textContent = `${list.length} STORES`;
-  document.getElementById('store-list').innerHTML = list.map(s => `
+  document.getElementById('store-list').innerHTML = list.map(s => {
+    const nm = s['name Non-WZ'] || s.name || '';
+    return `
     <div class="store-card">
       <div class="store-card-header">
-        <div class="store-name">${s.name}${s['Store id']?' · '+s['Store id']:''}</div>
+        <div class="store-name">${nm}${s['Store id']?' · '+s['Store id']:''}</div>
       </div>
       <div class="store-meta">
-        <div class="store-meta-row"><span class="meta-icon">📍</span><span class="meta-text">${s.address}</span></div>
-        <div class="store-meta-row"><span class="meta-icon">📞</span><span class="meta-text">${s.phone}</span></div>
+        <div class="store-meta-row"><span class="meta-icon">📍</span><span class="meta-text">${s.address||''}</span></div>
+        <div class="store-meta-row"><span class="meta-icon">📞</span><span class="meta-text">${s.phone||''}</span></div>
       </div>
       <div class="store-actions">
-        <a class="store-btn" href="tel:${s.phone.replace(/\D/g,'')}">📞 Call</a>
-        <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address)}" target="_blank">🗺 Map</a>
+        <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
+        <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank">🗺 Map</a>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
 }
 
 function renderLinks() {
@@ -1004,28 +1011,45 @@ function tiFilterStores() {
   tiOpenDropdown();
 }
 function tiOpenDropdown() {
-  const dd  = document.getElementById('ti-store-dropdown');
-  const q   = document.getElementById('ti-store-input').value.toLowerCase();
-  const list = storeData.filter(s => !q || (s.name||'').toLowerCase().includes(q));
-  if (!list.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = list.map(s =>
-    `<div class="ti-store-opt${tiState.store===s.name?' selected':''}" onclick="tiSelectStore('${s.name.replace(/'/g,"\\'")}')">${s.name}${s['Store id']?' · '+s['Store id']:''}</div>`
-  ).join('');
+  const dd   = document.getElementById('ti-store-dropdown');
+  const inp  = document.getElementById('ti-store-input');
+  const q    = inp.value.toLowerCase();
+  // Use 'name Non-WZ' column from the store sheet
+  const list = storeData.filter(s => {
+    const n = (s['name Non-WZ'] || s.name || '').toLowerCase();
+    return !q || n.includes(q);
+  });
+  if (!list.length) {
+    dd.innerHTML = `<div class="ti-store-opt" style="color:var(--muted);font-style:italic;">No stores match "${inp.value}"</div>`;
+    dd.style.display = 'block';
+    return;
+  }
+  dd.innerHTML = list.map(s => {
+    const storeName = s['name Non-WZ'] || s.name || '';
+    const storeId   = s['Store id'] || '';
+    const escaped   = storeName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const sel       = tiState.store === storeName ? ' selected' : '';
+    return `<div class="ti-store-opt${sel}" ontouchstart="tiSelectStore('${escaped}')" onclick="tiSelectStore('${escaped}')">${storeName}${storeId ? ' · ' + storeId : ''}</div>`;
+  }).join('');
   dd.style.display = 'block';
+  // close on outside interaction
+  const close = (e) => {
+    const wrap = document.getElementById('ti-store-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      dd.style.display = 'none';
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    }
+  };
   setTimeout(() => {
-    const close = (e) => {
-      if (!document.getElementById('ti-store-wrap').contains(e.target)) {
-        dd.style.display = 'none';
-        document.removeEventListener('click', close);
-      }
-    };
-    document.addEventListener('click', close);
-  }, 10);
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+  }, 50);
 }
 function tiSelectStore(name) {
   tiState.store = name;
-  document.getElementById('ti-store-input').value = name;
-  document.getElementById('ti-store-value').value = name;
+  document.getElementById('ti-store-input').value  = name;
+  document.getElementById('ti-store-value').value  = name;
   document.getElementById('ti-store-dropdown').style.display = 'none';
 }
 function tiInitChips() {
