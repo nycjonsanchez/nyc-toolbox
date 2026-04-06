@@ -676,7 +676,7 @@ html, body {
   <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
     <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
   </div>
-  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager')">
+  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager');setTimeout(()=>{if(!mpState.data.length&&!mpState.loading)mpLoad();else mpRender();},100)">
     <span class="sidebar-icon">🔍</span><span class="sidebar-label">Verification Portal</span>
   </div>
 </div>
@@ -883,7 +883,7 @@ html, body {
     <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
       <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
     </div>
-    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager')">
+    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager');setTimeout(()=>{if(!mpState.data.length&&!mpState.loading)mpLoad();else mpRender();},100)">
       <span class="drawer-icon">🔍</span><span class="drawer-label">Verification Portal</span><span class="drawer-arrow">›</span>
     </div>
   </div>
@@ -1831,11 +1831,13 @@ const _origSwitchTab = switchTab;
 switchTab = function(tab) {
   _origSwitchTab(tab);
   if (tab === 'manager') {
-    if (!mpState.data.length && !mpState.loading) {
-      mpLoad();
-    } else {
-      mpRender();
-    }
+    setTimeout(function() {
+      if (!mpState.data.length && !mpState.loading) {
+        mpLoad();
+      } else {
+        mpRender();
+      }
+    }, 50);
   }
 };
 </script>
