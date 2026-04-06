@@ -329,22 +329,6 @@ html, body {
 }
 .kpi-tip-label { font-size: 10px; font-weight: 800; color: var(--red); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
 
-.tools-grid { padding: 0 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-@media (min-width: 480px) { .tools-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1100px) { .tools-grid { grid-template-columns: repeat(4, 1fr); padding: 0 28px; } }
-.tool-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-  padding: 18px 16px; text-decoration: none;
-  display: flex; flex-direction: column; gap: 12px;
-  transition: border-color .2s, transform .15s, box-shadow .2s;
-  cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  min-height: 110px; justify-content: space-between;
-}
-.tool-card:active { transform: scale(.97); }
-.tool-card:hover { border-color: var(--red); box-shadow: 0 2px 12px rgba(205,4,11,0.1); }
-.tool-label { font-size: 14px; font-weight: 700; line-height: 1.3; color: var(--text); }
-.tool-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-
 .sync-bar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 12px; }
 .sync-meta { display: flex; align-items: center; gap: 7px; }
 .sync-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
@@ -421,6 +405,141 @@ html, body {
 .drawer-icon { font-size: 20px; width: 28px; text-align: center; }
 .drawer-label { flex: 1; font-size: 15px; font-weight: 500; color: var(--text); }
 .drawer-arrow { font-size: 20px; color: var(--muted); }
+/* ── TOOLS SECTION ── */
+.tools-grid { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+.tool-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: border-color .2s, transform .15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.tool-card:hover { border-color: var(--red); }
+.tool-card:active { transform: scale(.985); }
+.tool-card-icon { font-size: 26px; width: 48px; height: 48px; border-radius: 12px;
+  background: var(--red-dim); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tool-card-label { font-size: 14px; font-weight: 700; color: var(--text); }
+.tool-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.tool-card-arrow { font-size: 22px; color: var(--muted); margin-left: auto; flex-shrink: 0; }
+
+/* ── TRADE-IN PORTAL ── */
+.tradein-back-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  background: var(--card); position: sticky; top: 59px; z-index: 50;
+}
+.tradein-back-btn {
+  background: none; border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--red);
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: background .15s;
+}
+.tradein-back-btn:active { background: var(--red-dim); }
+.tradein-portal-title { font-size: 15px; font-weight: 800; color: var(--text); }
+
+.ti-cards { padding: 16px 16px 0; display: flex; flex-direction: column; gap: 10px; }
+.ti-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.ti-card-head {
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  font-size: 12px; font-weight: 800; color: var(--text);
+  letter-spacing: 0.01em; text-transform: uppercase;
+}
+.ti-card-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.ti-field { display: flex; flex-direction: column; gap: 6px; }
+.ti-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.ti-hint { font-size: 11px; color: var(--muted); }
+.ti-input {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  background: #fafafa; border: 1.5px solid var(--border);
+  font-size: 15px; color: var(--text); outline: none;
+  font-family: 'Inter', sans-serif; box-sizing: border-box;
+  -webkit-appearance: none;
+}
+.ti-input:focus { border-color: var(--red); }
+.ti-imei { letter-spacing: 0.3em; font-size: 18px; font-weight: 700; }
+.ti-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ti-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ti-chip {
+  padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  border: 1.5px solid var(--border); background: #fafafa; color: var(--muted);
+  cursor: pointer; transition: all .1s; -webkit-tap-highlight-color: transparent;
+}
+.ti-chip.active { border-color: #f5c2c2; background: #fff0f0; color: var(--red); font-weight: 700; }
+.ti-chip.active-danger { border-color: #f5c2c2; background: #fff0f0; color: var(--red); font-weight: 700; }
+.ti-batt-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+
+/* store dropdown */
+.ti-store-wrap { position: relative; }
+.ti-dropdown-arrow {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; color: var(--muted); pointer-events: none;
+}
+.ti-store-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 100; max-height: 200px; overflow-y: auto;
+}
+.ti-store-opt {
+  padding: 13px 14px; font-size: 14px; cursor: pointer;
+  border-bottom: 1px solid var(--border); color: var(--text);
+}
+.ti-store-opt:last-child { border-bottom: none; }
+.ti-store-opt:active { background: var(--red-dim); }
+.ti-store-opt.selected { background: #fff0f0; color: var(--red); font-weight: 700; }
+
+/* photos */
+.ti-photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ti-photo-slot { border-radius: 12px; overflow: hidden; cursor: pointer; }
+.ti-photo-inner {
+  aspect-ratio: 3/4; border-radius: 12px; border: 1.5px dashed var(--border);
+  background: #fafafa; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.ti-photo-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.ti-photo-placeholder { text-align: center; }
+.ti-photo-hint { font-size: 11px; font-weight: 600; color: #aeaeb2; margin-top: 4px; }
+
+/* submit */
+.ti-submit-btn {
+  width: 100%; padding: 15px; border-radius: 14px; border: none;
+  background: var(--red); color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif; margin-top: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.ti-submit-btn:active { opacity: .85; }
+.ti-submit-btn:disabled { opacity: .45; pointer-events: none; }
+
+/* success */
+.ti-success-wrap { padding: 40px 16px 32px; display: flex; flex-direction: column; align-items: center; }
+.ti-success-icon { font-size: 56px; margin-bottom: 12px; }
+.ti-success-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.ti-success-date { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.ti-summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.ti-summary-row:last-child { border-bottom: none; }
+.ti-summary-key { font-size: 12px; color: var(--muted); font-weight: 600; }
+.ti-summary-val { font-size: 13px; font-weight: 700; }
+.ti-tag {
+  padding: 3px 9px; border-radius: 20px;
+  background: #fff0f0; border: 1px solid #f5c2c2; color: var(--red);
+  font-size: 11px; font-weight: 600;
+}
+
+/* submitting overlay */
+.ti-submitting {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000; flex-direction: column; gap: 12px;
+}
+.ti-submitting-spinner {
+  width: 40px; height: 40px; border: 3px solid rgba(255,255,255,.25);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin .65s linear infinite;
+}
+.ti-submitting-text { color: #fff; font-size: 14px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -466,11 +585,11 @@ html, body {
   <div class="sidebar-item" id="snav-directory" onclick="switchTab('directory')">
     <span class="sidebar-icon">📍</span><span class="sidebar-label">Store Directory</span>
   </div>
-  <div class="sidebar-item" id="snav-tools" onclick="switchTab('tools')">
-    <span class="sidebar-icon">🛠️</span><span class="sidebar-label">Tools</span>
-  </div>
   <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
     <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
+  </div>
+  <div class="sidebar-item" id="snav-tools" onclick="switchTab('tools')">
+    <span class="sidebar-icon">🔧</span><span class="sidebar-label">Tools</span>
   </div>
 </div>
 
@@ -507,10 +626,179 @@ html, body {
     <div class="kpi-grid" id="kpi-grid"></div>
   </div>
 
+  <!-- ── TOOLS SECTION ── -->
   <div class="section" id="section-tools">
-    <div class="section-header"><div class="section-title">Tools</div></div>
-    <div class="tools-grid" id="tools-grid"></div>
-  </div>
+    <div class="section-header">
+      <div class="section-title">Tools</div>
+      <div class="section-count" id="tools-count"></div>
+    </div>
+
+    <!-- Trade-In Intake Card -->
+    <div class="tools-grid" id="tools-grid">
+      <div class="tool-card" onclick="openTool('tradein')">
+        <div class="tool-card-icon">📱</div>
+        <div>
+          <div class="tool-card-label">Trade-In Intake</div>
+          <div class="tool-card-sub">Log a device trade-in</div>
+        </div>
+        <span class="tool-card-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- Trade-In Intake Form (hidden until activated) -->
+    <div id="tradein-portal" style="display:none;">
+      <div class="tradein-back-bar">
+        <button class="tradein-back-btn" onclick="closeTool()">‹ Back to Tools</button>
+        <span class="tradein-portal-title">Trade-In Intake</span>
+      </div>
+
+      <!-- FORM SCREEN -->
+      <div id="ti-form-screen">
+        <div class="ti-cards">
+
+          <div class="ti-card">
+            <div class="ti-card-head">Rep Info</div>
+            <div class="ti-card-body">
+              <div class="ti-field">
+                <label class="ti-label">Your Name *</label>
+                <input class="ti-input" id="ti-rep" placeholder="First &amp; Last Name" />
+              </div>
+              <div class="ti-field">
+                <label class="ti-label">Store Location *</label>
+                <div class="ti-store-wrap" id="ti-store-wrap">
+                  <input class="ti-input" id="ti-store-input" placeholder="Search store location…" autocomplete="off"
+                    oninput="tiFilterStores()" onfocus="tiOpenDropdown()" />
+                  <span class="ti-dropdown-arrow">▼</span>
+                  <div class="ti-store-dropdown" id="ti-store-dropdown" style="display:none;"></div>
+                </div>
+                <input type="hidden" id="ti-store-value" />
+              </div>
+            </div>
+          </div>
+
+          <div class="ti-card">
+            <div class="ti-card-head">Device Info</div>
+            <div class="ti-card-body">
+              <div class="ti-field">
+                <label class="ti-label">Phone Model *</label>
+                <input class="ti-input" id="ti-model" placeholder="e.g. iPhone 15 Pro Max" />
+              </div>
+              <div class="ti-field">
+                <label class="ti-label">IMEI — Last 4 Digits *</label>
+                <input class="ti-input ti-imei" id="ti-imei" placeholder="e.g. 4821" inputmode="numeric" maxlength="4"
+                  oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)" />
+                <div class="ti-hint">Settings › General › About</div>
+              </div>
+              <div class="ti-two-col">
+                <div class="ti-field">
+                  <label class="ti-label">Storage *</label>
+                  <div class="ti-chips" id="ti-storage-chips"></div>
+                </div>
+                <div class="ti-field">
+                  <label class="ti-label">Lock Status *</label>
+                  <div class="ti-chips" id="ti-lock-chips"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ti-card">
+            <div class="ti-card-head">Condition</div>
+            <div class="ti-card-body">
+              <div class="ti-field">
+                <label class="ti-label" id="ti-batt-label">Battery Health *</label>
+                <input type="range" min="0" max="100" step="1" value="0" id="ti-battery"
+                  oninput="tiBatteryUpdate()" style="width:100%;accent-color:var(--red);" />
+                <div class="ti-batt-row">
+                  <span style="font-size:11px;color:var(--muted);">0%</span>
+                  <span id="ti-batt-display" style="font-size:13px;font-weight:700;color:var(--red);">0%</span>
+                  <span style="font-size:11px;color:var(--muted);">100%</span>
+                </div>
+              </div>
+              <div class="ti-field">
+                <label class="ti-label">Damage</label>
+                <div class="ti-chips" id="ti-damage-chips"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ti-card">
+            <div class="ti-card-head">Purchase Price</div>
+            <div class="ti-card-body">
+              <div class="ti-field">
+                <label class="ti-label">Amount Paid to Customer (optional)</label>
+                <div style="position:relative;">
+                  <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;font-weight:600;">$</span>
+                  <input type="number" min="0" step="0.01" class="ti-input" id="ti-price" placeholder="0.00" style="padding-left:30px;" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ti-card">
+            <div class="ti-card-head">Device Photos</div>
+            <div class="ti-card-body">
+              <div class="ti-photos-grid">
+                <div class="ti-photo-slot" onclick="document.getElementById('ti-photo-front').click()">
+                  <input type="file" id="ti-photo-front" accept="image/*" capture="environment" style="display:none;" onchange="tiLoadPhoto('front',this)" />
+                  <div class="ti-photo-inner" id="ti-photo-front-preview">
+                    <div class="ti-photo-placeholder"><div style="font-size:28px;">📷</div><div class="ti-photo-hint">Front</div></div>
+                  </div>
+                </div>
+                <div class="ti-photo-slot" onclick="document.getElementById('ti-photo-lcd').click()">
+                  <input type="file" id="ti-photo-lcd" accept="image/*" capture="environment" style="display:none;" onchange="tiLoadPhoto('lcd',this)" />
+                  <div class="ti-photo-inner" id="ti-photo-lcd-preview">
+                    <div class="ti-photo-placeholder"><div style="font-size:28px;">📷</div><div class="ti-photo-hint">LCD On</div></div>
+                  </div>
+                </div>
+                <div class="ti-photo-slot" onclick="document.getElementById('ti-photo-back').click()">
+                  <input type="file" id="ti-photo-back" accept="image/*" capture="environment" style="display:none;" onchange="tiLoadPhoto('back',this)" />
+                  <div class="ti-photo-inner" id="ti-photo-back-preview">
+                    <div class="ti-photo-placeholder"><div style="font-size:28px;">📷</div><div class="ti-photo-hint">Back</div></div>
+                  </div>
+                </div>
+                <div class="ti-photo-slot" onclick="document.getElementById('ti-photo-info').click()">
+                  <input type="file" id="ti-photo-info" accept="image/*" capture="environment" style="display:none;" onchange="tiLoadPhoto('info',this)" />
+                  <div class="ti-photo-inner" id="ti-photo-info-preview">
+                    <div class="ti-photo-placeholder"><div style="font-size:28px;">📷</div><div class="ti-photo-hint">IMEI / Info</div></div>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7;">
+                📌 Capture: Front · LCD on · Back · Settings › General › About (IMEI screen)
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end ti-cards -->
+
+        <div style="padding:0 16px 32px;">
+          <button class="ti-submit-btn" id="ti-submit-btn" onclick="tiSubmit()">Submit Trade-In</button>
+        </div>
+      </div><!-- end ti-form-screen -->
+
+      <!-- SUCCESS SCREEN -->
+      <div id="ti-success-screen" style="display:none;">
+        <div class="ti-success-wrap">
+          <div class="ti-success-icon">✅</div>
+          <div class="ti-success-title">Trade-In Submitted</div>
+          <div class="ti-success-date" id="ti-success-date"></div>
+
+          <div class="ti-card" style="margin-top:16px;text-align:left;">
+            <div class="ti-card-head">Submission Summary</div>
+            <div class="ti-card-body" id="ti-summary-body"></div>
+          </div>
+
+          <div style="font-size:12px;color:var(--muted);margin:16px 0;line-height:1.7;text-align:center;">
+            Sent for manager review. A manager will verify and update status shortly.
+          </div>
+
+          <button class="ti-submit-btn" onclick="tiReset()">Submit Another Device</button>
+        </div>
+      </div>
+
+    </div><!-- end tradein-portal -->
+  </div><!-- end section-tools -->
 
 </div>
 
@@ -525,11 +813,11 @@ html, body {
     <div class="drawer-item" id="dmenu-directory" onclick="switchTab('directory')">
       <span class="drawer-icon">📍</span><span class="drawer-label">Store Directory</span><span class="drawer-arrow">›</span>
     </div>
-    <div class="drawer-item" id="dmenu-tools" onclick="switchTab('tools')">
-      <span class="drawer-icon">🛠️</span><span class="drawer-label">Tools</span><span class="drawer-arrow">›</span>
-    </div>
     <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
       <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
+    </div>
+    <div class="drawer-item" id="dmenu-tools" onclick="switchTab('tools')">
+      <span class="drawer-icon">🔧</span><span class="drawer-label">Tools</span><span class="drawer-arrow">›</span>
     </div>
   </div>
 </div>
@@ -639,7 +927,6 @@ function initApp() {
   appInited = true;
   renderLinks();
   renderKPIs();
-  renderTools();
   setDate();
   fetchStores();
   setInterval(fetchStores, 5 * 60 * 1000);
@@ -687,20 +974,12 @@ function filterStores() {
   ));
 }
 
-const TOOLS = [
-  { label:'Discretionary Funds',   sub:'Request Form',            icon:'💵', color:'green',  url:'https://docs.google.com/forms/d/e/1FAIpQLScafsEuGmcHgsix0jwJ71qS9SkwxK2Dk6gy4dMiDra68UyiRg/viewform?pli=1&pli=1' },
-  { label:'VZ Infocenter Promotion', sub:'Promotions Hub',          icon:'📋', color:'blue',   url:'https://urldefense.proofpoint.com/v2/url?u=https-3A__ilogin.verizon.com_newextranet_servlet_ExtranetController-3Fmethod-3DGetVzIDForAboutYou-26AuthModel-3DOneSSO-26AppType-3DFederation-26app-3Dpos-26TYPE-3D33554433-26REALMOID-3D06-2D0008795c-2D31df-2D1ff5-2D8539-2D9bb88c6c0000-26GUID-3D-26SMAUTHREASON-3D0-26METHOD-3DGET-26SMAGENTNAME-3D-24SM-24CI09LY-252f1uk3W8O-252f6F5RjP-252bKu93-252bRj4pRML64XVf6HgJRtCUBcPWytRMCLjfjMPCx-26TARGET-3D-24SM-24https-253a-252f-252finfomanager-252everizon-252ecom-252fcontent-252fkm-252fcategories-252fpromotions-252ehtml&d=DwMFAw&c=euGZstcaTDllvimEN8b7jXrwqOf-v5A_CdpgnVfiiMM&r=bvjPS2qChCtn3oJ7xOsN8J33nLXRv7_ze5VoMKB41p8&m=OjhacwgcItQ3nH2boUFTYGDJvGwH_K-3tmjWAyHL_-T42xjSvGZHqbpdgOb1UETZ&s=tqnw_6SxM8mBMl5Hgqo1SzC_AZ4a2AG3EIjTJRLxZAw&e=' },
-  { label:'HR Portal',             sub:'Handbook',                icon:'👤', color:'purple', url:'https://drive.google.com/file/d/1sw_GEPSZrvx-kSSYisW_rcReYNWdDGPc/view' },
-  { label:'Pull Through Tracker',  sub:'Accessories per ticket',  icon:'🛒', color:'amber',  onclick:'openTool("pullthrough")' },
-  { label:'Perks Attach',          sub:'Bundle rate checker',     icon:'⭐', color:'purple', onclick:'openTool("perks")' },
-  { label:'Premium Mix',           sub:'Plan tier calculator',    icon:'🏆', color:'teal',   onclick:'openTool("premium")' },
-];
-
 const LINKS = [
   { label:'Power BI',       sub:'Evolve 5',           icon:'📊', color:'blue',   url:'https://app.powerbi.com/groups/e6f168ee-146a-4acb-85e9-41ca851e5b56/reports/ef164d65-109a-4fe6-9147-bc48a7a9a24f?ctid=e9406363-68fe-415c-9ecb-6f18a3ccf590&pbi_source=linkShare' },
   { label:'Store Supplies', sub:'Order Form',          icon:'🛒', color:'blue',   url:'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=Y2NA6f5oXEGey28Yo8z1kFzhRtscrOFNswQy1AvZejdUMVBPRlpBUjZUNTVCQkM3SFpJRjVYRVhLQi4u' },
   { label:'UPS Label',      sub:'Label Request Form',  icon:'📦', color:'amber',  url:'https://forms.office.com/r/2dj7rpmUqv' },
   { label:'Payroll',        sub:'ADP Workforce',       icon:'💰', color:'green',  url:'https://online.adp.com/signin/v1/?APPID=RUN&productId=80e309c3-70c3-bae1-e053-3505430b5495&Action=Login&Stc=False&ssru=branded' },
+  { label:'HR Portal',      sub:'Handbook',            icon:'👤', color:'purple', url:'https://drive.google.com/file/d/1sw_GEPSZrvx-kSSYisW_rcReYNWdDGPc/view' },
   { label:'Training Hub',   sub:'Workday',             icon:'🎓', color:'teal',   url:'https://wd12.myworkday.com/verizon/learning' },
   { label:'IT Support',     sub:'SPOC',                icon:'🛠️', color:'blue',   url:'https://tccinc.service-now.com/sp' },
   { label:'NY Sales Bingo', sub:'nysalesbingo.com',    icon:'🎯', color:'red',    url:'https://nysalesbingo.com' },
@@ -758,22 +1037,6 @@ function renderKPIs() {
   `).join('');
 }
 
-function renderTools() {
-  document.getElementById('tools-grid').innerHTML = TOOLS.map(t => {
-    const clickAttr = t.onclick ? `onclick="${t.onclick}"` : '';
-    const href = t.url ? t.url : 'javascript:void(0)';
-    const target = t.url ? 'target="_blank"' : '';
-    return `<a class="tool-card link-card" href="${href}" ${clickAttr} ${target}>
-      <div class="link-icon ${t.color}">${t.icon}</div>
-      <div><div class="tool-label">${t.label}</div><div class="tool-sub">${t.sub}</div></div>
-    </a>`;
-  }).join('');
-}
-
-function openTool(id) {
-  alert('🚧 ' + id.charAt(0).toUpperCase() + id.slice(1) + ' tool — coming soon!');
-}
-
 function toggleMenu() {
   const drawer=document.getElementById('menuDrawer'),overlay=document.getElementById('menuOverlay'),fab=document.getElementById('fabBtn');
   if(drawer.classList.contains('open')){closeMenu();}
@@ -806,6 +1069,245 @@ function openBrinks() {
   else if(isAndroid) window.location='https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven';
   else window.open('https://play.google.com/store/apps/details?id=com.brinks.twentysevenseven','_blank');
 }
-</script>
-</body>
+// ── TOOLS / TRADE-IN ──────────────────────────────────────────────────────────
+// CONFIGURE: Apps Script endpoint for trade-in submissions
+// Deploy a new Apps Script web app that handles doPost() for trade-in data
+// and saves photos to Google Drive. Replace the URL below with your deployment.
+const TRADEIN_URL = 'https://script.google.com/macros/s/AKfycbxCB9xb0FshjhUQ02kS8sFWCZIVG1Fh0WZWWYOwUPtRnRR5bD18txkq4dBcpTevvBL4/exec';
+// CONFIGURE: Google Drive folder ID where photos will be stored
+const TRADEIN_DRIVE_FOLDER = 'YOUR_DRIVE_FOLDER_ID';
+
+const TI_STORAGE = ['16GB','32GB','64GB','128GB','256GB','512GB','1TB','Other'];
+const TI_LOCK    = ['🔓 Unlocked','🔒 Locked – Verizon','🔒 Locked – AT&T','🔒 Locked – T-Mobile','🔒 Locked – Other'];
+const TI_DAMAGE  = ['None','Cracked Screen','Cracked Back','Bent Frame','Water Damage','Dead Pixels','Burn-in','Camera Damage','Other'];
+
+let tiState = {
+  repName:'', store:'', model:'', storage:'', locked:'',
+  battery:0, imeiLast4:'', purchasePrice:'',
+  damage:[], photos:{ front:null, lcd:null, back:null, info:null }
+};
+
+function openTool(tool) {
+  if (tool === 'tradein') {
+    document.getElementById('tools-grid').style.display = 'none';
+    document.getElementById('tradein-portal').style.display = 'block';
+    tiInitChips();
+    tiPopulateStores();
+  }
+}
+function closeTool() {
+  document.getElementById('tradein-portal').style.display = 'none';
+  document.getElementById('tools-grid').style.display = 'flex';
+  document.getElementById('ti-form-screen').style.display = 'block';
+  document.getElementById('ti-success-screen').style.display = 'none';
+}
+
+// ── Store dropdown (reuses storeData already loaded) ──────────────────────────
+function tiPopulateStores() {
+  const inp = document.getElementById('ti-store-input');
+  inp.value = tiState.store;
+}
+function tiFilterStores() {
+  const q = document.getElementById('ti-store-input').value.toLowerCase();
+  tiState.store = '';
+  document.getElementById('ti-store-value').value = '';
+  tiOpenDropdown(q);
+}
+function tiOpenDropdown(q) {
+  const dd   = document.getElementById('ti-store-dropdown');
+  const inp  = document.getElementById('ti-store-input');
+  const query = q !== undefined ? q : inp.value.toLowerCase();
+  const list  = storeData.filter(s => !query || (s.name||'').toLowerCase().includes(query));
+  if (!list.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = list.map(s =>
+    `<div class="ti-store-opt${tiState.store===s.name?' selected':''}" onclick="tiSelectStore('${s.name.replace(/'/g,"\\'")}')">
+      ${s.name}${s['Store id'] ? ' · '+s['Store id'] : ''}
+    </div>`
+  ).join('');
+  dd.style.display = 'block';
+  // close on outside click
+  setTimeout(() => {
+    const close = (e) => {
+      if (!document.getElementById('ti-store-wrap').contains(e.target)) {
+        dd.style.display = 'none';
+        document.removeEventListener('click', close);
+      }
+    };
+    document.addEventListener('click', close);
+  }, 10);
+}
+function tiSelectStore(name) {
+  tiState.store = name;
+  document.getElementById('ti-store-input').value = name;
+  document.getElementById('ti-store-value').value = name;
+  document.getElementById('ti-store-dropdown').style.display = 'none';
+}
+
+// ── Chips ─────────────────────────────────────────────────────────────────────
+function tiInitChips() {
+  tiRenderChips('ti-storage-chips', TI_STORAGE, 'storage', false);
+  tiRenderChips('ti-lock-chips',    TI_LOCK,    'locked',  false);
+  tiRenderChips('ti-damage-chips',  TI_DAMAGE,  'damage',  true);
+}
+function tiRenderChips(containerId, options, field, multi) {
+  document.getElementById(containerId).innerHTML = options.map(o => {
+    const active = multi ? tiState[field].includes(o) : tiState[field] === o;
+    const danger = multi && active && o !== 'None';
+    return `<button class="ti-chip${active?' '+(danger?'active-danger':'active'):''}" onclick="tiToggleChip('${field}','${o.replace(/'/g,"\\'")}',${multi})">${o}</button>`;
+  }).join('');
+}
+function tiToggleChip(field, val, multi) {
+  if (multi) {
+    if (val === 'None') {
+      tiState[field] = tiState[field].includes('None') ? [] : ['None'];
+    } else {
+      tiState[field] = tiState[field].filter(v => v !== 'None');
+      if (tiState[field].includes(val)) tiState[field] = tiState[field].filter(v => v !== val);
+      else tiState[field].push(val);
+    }
+    tiRenderChips('ti-damage-chips', TI_DAMAGE, 'damage', true);
+  } else {
+    tiState[field] = val;
+    if (field === 'storage') tiRenderChips('ti-storage-chips', TI_STORAGE, 'storage', false);
+    if (field === 'locked')  tiRenderChips('ti-lock-chips',    TI_LOCK,    'locked',  false);
+  }
+}
+
+// ── Battery ───────────────────────────────────────────────────────────────────
+function tiBatteryUpdate() {
+  const v = parseInt(document.getElementById('ti-battery').value);
+  tiState.battery = v;
+  const dot   = v >= 80 ? '🟢' : v >= 50 ? '🟡' : '🔴';
+  const color = v >= 80 ? '#16a34a' : v >= 50 ? '#d97706' : 'var(--red)';
+  const disp  = document.getElementById('ti-batt-display');
+  disp.textContent = dot + ' ' + v + '%';
+  disp.style.color = color;
+  document.getElementById('ti-batt-label').textContent = 'Battery Health *' + (v ? ' — ' + v + '%' : '');
+}
+
+// ── Photos ────────────────────────────────────────────────────────────────────
+function tiLoadPhoto(field, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    tiState.photos[field] = e.target.result;
+    const preview = document.getElementById('ti-photo-' + field + '-preview');
+    const label   = { front:'Front', lcd:'LCD On', back:'Back', info:'IMEI / Info' }[field];
+    preview.innerHTML = `<img src="${e.target.result}" alt="${label}" />`;
+    preview.style.border = '1.5px solid #f5c2c2';
+    preview.style.background = 'transparent';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Validate & Submit ─────────────────────────────────────────────────────────
+function tiValidate() {
+  const rep   = document.getElementById('ti-rep').value.trim();
+  const model = document.getElementById('ti-model').value.trim();
+  const imei  = document.getElementById('ti-imei').value.trim();
+  if (!rep)                { alert('Enter your name.');              return false; }
+  if (!tiState.store)      { alert('Select a store location.');      return false; }
+  if (!model)              { alert('Enter the phone model.');        return false; }
+  if (!tiState.storage)    { alert('Select storage size.');          return false; }
+  if (!tiState.locked)     { alert('Select lock status.');           return false; }
+  if (!tiState.battery)    { alert('Set battery percentage above 0.'); return false; }
+  if (imei.length !== 4)   { alert('Enter last 4 digits of IMEI.'); return false; }
+  return true;
+}
+
+async function tiSubmit() {
+  if (!tiValidate()) return;
+  const btn = document.getElementById('ti-submit-btn');
+  btn.disabled = true;
+
+  // show submitting overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'ti-submitting';
+  overlay.innerHTML = `<div class="ti-submitting-spinner"></div><div class="ti-submitting-text">Submitting…</div>`;
+  document.body.appendChild(overlay);
+
+  const payload = {
+    action:       'tradeIn',
+    repName:      document.getElementById('ti-rep').value.trim(),
+    store:        tiState.store,
+    model:        document.getElementById('ti-model').value.trim(),
+    imeiLast4:    document.getElementById('ti-imei').value.trim(),
+    storage:      tiState.storage,
+    locked:       tiState.locked,
+    battery:      tiState.battery,
+    damage:       tiState.damage.join(', ') || 'None',
+    purchasePrice:document.getElementById('ti-price').value || '0',
+    driveFolderId:TRADEIN_DRIVE_FOLDER,
+    photos: {
+      front: tiState.photos.front || null,
+      lcd:   tiState.photos.lcd   || null,
+      back:  tiState.photos.back  || null,
+      info:  tiState.photos.info  || null,
+    },
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(TRADEIN_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.error || 'Unknown error');
+    tiShowSuccess(payload);
+  } catch (err) {
+    console.error('Trade-In submit error:', err);
+    alert('Submission failed: ' + err.message + '\n\nCheck that the Apps Script URL is configured and deployed.');
+    btn.disabled = false;
+  } finally {
+    document.body.removeChild(overlay);
+  }
+}
+
+function tiShowSuccess(data) {
+  document.getElementById('ti-form-screen').style.display = 'none';
+  const screen = document.getElementById('ti-success-screen');
+  screen.style.display = 'block';
+  document.getElementById('ti-success-date').textContent = new Date().toLocaleString();
+  const batt = parseInt(data.battery) || 0;
+  const dot  = batt >= 80 ? '🟢' : batt >= 50 ? '🟡' : '🔴';
+  const rows = [
+    ['Rep',         data.repName],
+    ['Store',       data.store],
+    ['Device',      data.model],
+    ['Storage',     data.storage],
+    ['Lock',        data.locked],
+    ['Battery',     `${dot} ${batt}%`],
+    ['IMEI Last 4', data.imeiLast4],
+    ['Paid',        data.purchasePrice && data.purchasePrice !== '0' ? '$' + parseFloat(data.purchasePrice).toFixed(2) : 'No cash paid'],
+    ['Damage',      data.damage],
+  ];
+  document.getElementById('ti-summary-body').innerHTML =
+    rows.map(([k,v]) => `<div class="ti-summary-row"><span class="ti-summary-key">${k}</span><span class="ti-summary-val">${v}</span></div>`).join('');
+}
+
+function tiReset() {
+  tiState = { repName:'', store:'', model:'', storage:'', locked:'',
+    battery:0, imeiLast4:'', purchasePrice:'', damage:[], photos:{ front:null, lcd:null, back:null, info:null } };
+  ['ti-rep','ti-model','ti-imei','ti-price'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('ti-store-input').value = '';
+  document.getElementById('ti-store-value').value = '';
+  document.getElementById('ti-battery').value = 0;
+  tiBatteryUpdate();
+  tiInitChips();
+  ['front','lcd','back','info'].forEach(f => {
+    const p = document.getElementById('ti-photo-'+f+'-preview');
+    const label = { front:'Front', lcd:'LCD On', back:'Back', info:'IMEI / Info' }[f];
+    p.innerHTML = `<div class="ti-photo-placeholder"><div style="font-size:28px;">📷</div><div class="ti-photo-hint">${label}</div></div>`;
+    p.style.border = ''; p.style.background = '';
+  });
+  document.getElementById('ti-form-screen').style.display = 'block';
+  document.getElementById('ti-success-screen').style.display = 'none';
+  document.getElementById('ti-submit-btn').disabled = false;
+}
+
 </html>
