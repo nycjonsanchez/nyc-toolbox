@@ -1843,11 +1843,15 @@ const _origSwitchTab = switchTab;
 switchTab = function(tab) {
   _origSwitchTab(tab);
   if (tab === 'manager') {
-    // Section is now active — load or re-render
     if (!mpState.data.length && !mpState.loading) {
-      mpLoad();
+      mpLoad().then(() => mpRender());
     } else if (!mpState.loading) {
       mpRender();
+    } else {
+      // Still loading from a previous call — poll until done
+      const wait = setInterval(() => {
+        if (!mpState.loading) { clearInterval(wait); mpRender(); }
+      }, 200);
     }
   }
 };
