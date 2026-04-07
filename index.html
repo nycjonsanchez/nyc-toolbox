@@ -458,6 +458,13 @@ html, body {
   max-height: 220px; overflow-y: auto;
 }
 .ti-store-opt { padding: 13px 14px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); color: var(--text); }
+.ti-phone-wrap { position: relative; overflow: visible; }
+.ti-phone-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 999;
+  max-height: 220px; overflow-y: auto;
+}
 .ti-store-opt:last-child { border-bottom: none; }
 .ti-store-opt:active, .ti-store-opt:hover { background: var(--red-dim); }
 .ti-store-opt.selected { background: #fff0f0; color: var(--red); font-weight: 700; }
@@ -758,7 +765,13 @@ html, body {
             <div class="ti-card-body">
               <div class="ti-field">
                 <label class="ti-label">Phone Model *</label>
-                <input class="ti-input" id="ti-model" placeholder="e.g. iPhone 15 Pro Max" />
+                <div class="ti-phone-wrap" id="ti-phone-wrap">
+                  <input class="ti-input" id="ti-model" placeholder="Search phone model…" autocomplete="off"
+                    oninput="tiFilterPhones()" onfocus="tiOpenPhoneDropdown()" />
+                  <span class="ti-dropdown-arrow">▼</span>
+                  <div class="ti-phone-dropdown" id="ti-phone-dropdown" style="display:none;"></div>
+                </div>
+                <input type="hidden" id="ti-model-value" />
               </div>
               <div class="ti-field">
                 <label class="ti-label">IMEI — Last 4 Digits *</label>
@@ -1137,10 +1150,25 @@ function renderTools() {
 
 // ── TRADE-IN INTAKE ───────────────────────────────────────────────────────────
 const TRADEIN_URL = 'https://script.google.com/macros/s/AKfycbySV92Fgb0EmzsGRXD3uOJrz1cFYgOR-H9Tjk-OvNL7K3qi_Yp2T-KrhyQ80RpsnLq_/exec';
+const PHONES_URL  = 'https://script.google.com/macros/s/AKfycbxeHyORdMb5cEGS1mEy7CfMvkHf2n4G9kaSmgiMwoit_0nUTBfMDP1cNwB5Jux4hM0/exec';
 
 const TI_STORAGE = ['16GB','32GB','64GB','128GB','256GB','512GB','1TB','Other'];
 const TI_LOCK    = ['🔓 Unlocked','🔒 Locked – Verizon','🔒 Locked – AT&T','🔒 Locked – T-Mobile','🔒 Locked – Other'];
 const TI_DAMAGE  = ['None','Cracked Screen','Cracked Back','Bent Frame','Water Damage','Dead Pixels','Burn-in','Camera Damage','Other'];
+
+let phoneData = []; // loaded from Google Sheet
+
+async function fetchPhones() {
+  try {
+    const res  = await fetch(PHONES_URL + '?action=getPhones');
+    const json = await res.json();
+    if (json.status === 'ok' && json.data) {
+      phoneData = json.data;
+    }
+  } catch(e) {
+    console.warn('Could not load phone list:', e.message);
+  }
+}
 
 let tiState = {
   repName:'', store:'', model:'', storage:'', locked:'',
@@ -1154,6 +1182,7 @@ function openTradeIn() {
   document.getElementById('tradein-portal').style.display = 'block';
   tiInitChips();
   tiPopulateStores();
+  if (!phoneData.length) fetchPhones();
 }
 function closeTradeIn() {
   document.getElementById('tradein-portal').style.display = 'none';
@@ -1212,6 +1241,48 @@ function tiSelectStore(name) {
   document.getElementById('ti-store-input').value  = name;
   document.getElementById('ti-store-value').value  = name;
   document.getElementById('ti-store-dropdown').style.display = 'none';
+}
+
+// ── Phone model dropdown ──────────────────────────────────────────────────────
+function tiFilterPhones() {
+  tiState.model = '';
+  document.getElementById('ti-model-value').value = '';
+  tiOpenPhoneDropdown();
+}
+function tiOpenPhoneDropdown() {
+  const dd  = document.getElementById('ti-phone-dropdown');
+  const inp = document.getElementById('ti-model');
+  const q   = inp.value.toLowerCase();
+  const list = phoneData.filter(p => !q || p.toLowerCase().includes(q));
+  if (!list.length) {
+    dd.innerHTML = `<div class="ti-store-opt" style="color:var(--muted);font-style:italic;">No phones match "${inp.value}"</div>`;
+    dd.style.display = 'block';
+    return;
+  }
+  dd.innerHTML = list.map(p => {
+    const escaped = p.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const sel = (tiState.model === p) ? ' selected' : '';
+    return `<div class="ti-store-opt${sel}" ontouchstart="tiSelectPhone('${escaped}')" onclick="tiSelectPhone('${escaped}')">${p}</div>`;
+  }).join('');
+  dd.style.display = 'block';
+  const close = (e) => {
+    const wrap = document.getElementById('ti-phone-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      dd.style.display = 'none';
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    }
+  };
+  setTimeout(() => {
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+  }, 50);
+}
+function tiSelectPhone(name) {
+  tiState.model = name;
+  document.getElementById('ti-model').value       = name;
+  document.getElementById('ti-model-value').value = name;
+  document.getElementById('ti-phone-dropdown').style.display = 'none';
 }
 function tiInitChips() {
   tiRenderChips('ti-storage-chips', TI_STORAGE, 'storage', false);
@@ -1327,6 +1398,7 @@ function tiShowSuccess(data) {
 function tiReset() {
   tiState = { repName:'', store:'', model:'', storage:'', locked:'', battery:0, imeiLast4:'', purchasePrice:'', damage:[], photos:{front:null,lcd:null,back:null,info:null} };
   ['ti-rep','ti-model','ti-imei','ti-price'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const mv = document.getElementById('ti-model-value'); if(mv) mv.value = '';
   document.getElementById('ti-store-input').value = '';
   document.getElementById('ti-store-value').value = '';
   document.getElementById('ti-battery').value = 0;
