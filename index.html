@@ -676,7 +676,7 @@ html, body {
   <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
     <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
   </div>
-  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager')">
+  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager');mpLoad()">
     <span class="sidebar-icon">🔍</span><span class="sidebar-label">Verification Portal</span>
   </div>
 </div>
@@ -883,7 +883,7 @@ html, body {
     <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
       <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
     </div>
-    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager')">
+    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager');mpLoad()">
       <span class="drawer-icon">🔍</span><span class="drawer-label">Verification Portal</span><span class="drawer-arrow">›</span>
     </div>
   </div>
@@ -1362,17 +1362,6 @@ function switchTab(tab) {
   const sNav=document.getElementById('snav-'+tab);
   if(sNav)sNav.classList.add('active');
   closeMenu();
-  if (tab === 'manager') {
-    if (mpState.loading) {
-      const wait = setInterval(() => {
-        if (!mpState.loading) { clearInterval(wait); mpRender(); }
-      }, 200);
-    } else if (!mpState.data.length) {
-      mpLoad();
-    } else {
-      mpRender();
-    }
-  }
 }
 function setDate() {
   document.getElementById('headerDate').textContent =
@@ -1437,10 +1426,9 @@ async function mpLoad() {
     mpState.error   = err.message;
     mpState.loading = false;
   }
-  // Force render twice — once immediately, once after a tick
-  // to ensure the DOM updates even if the section just became visible
+  // Force render after browser paint cycle
   mpRender();
-  setTimeout(mpRender, 100);
+  requestAnimationFrame(() => requestAnimationFrame(() => mpRender()));
 }
 
 // ── Write status update back to sheet ─────────────────────────────────────────
