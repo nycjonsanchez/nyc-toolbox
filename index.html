@@ -1426,7 +1426,10 @@ async function mpLoad() {
     mpState.error   = err.message;
     mpState.loading = false;
   }
+  // Force render twice — once immediately, once after a tick
+  // to ensure the DOM updates even if the section just became visible
   mpRender();
+  setTimeout(mpRender, 100);
 }
 
 // ── Write status update back to sheet ─────────────────────────────────────────
@@ -1843,15 +1846,15 @@ const _origSwitchTab = switchTab;
 switchTab = function(tab) {
   _origSwitchTab(tab);
   if (tab === 'manager') {
-    if (!mpState.data.length && !mpState.loading) {
-      mpLoad().then(() => mpRender());
-    } else if (!mpState.loading) {
-      mpRender();
-    } else {
-      // Still loading from a previous call — poll until done
+    if (mpState.loading) {
+      // Already loading — poll until done then render
       const wait = setInterval(() => {
         if (!mpState.loading) { clearInterval(wait); mpRender(); }
       }, 200);
+    } else if (!mpState.data.length) {
+      mpLoad();
+    } else {
+      mpRender();
     }
   }
 };
