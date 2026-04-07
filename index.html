@@ -1362,6 +1362,17 @@ function switchTab(tab) {
   const sNav=document.getElementById('snav-'+tab);
   if(sNav)sNav.classList.add('active');
   closeMenu();
+  if (tab === 'manager') {
+    if (mpState.loading) {
+      const wait = setInterval(() => {
+        if (!mpState.loading) { clearInterval(wait); mpRender(); }
+      }, 200);
+    } else if (!mpState.data.length) {
+      mpLoad();
+    } else {
+      mpRender();
+    }
+  }
 }
 function setDate() {
   document.getElementById('headerDate').textContent =
@@ -1841,23 +1852,7 @@ function mpSetQueueStatus(v)   { mpState.queueStatus = v; mpRender(); }
 function mpSetArchStatus(v)    { mpState.archStatus  = v; mpRender(); }
 function mpSetArchSearch(v)    { mpState.archSearch  = v; mpRender(); }
 
-// ── Hook into switchTab to load data on first open ────────────────────────────
-const _origSwitchTab = switchTab;
-switchTab = function(tab) {
-  _origSwitchTab(tab);
-  if (tab === 'manager') {
-    if (mpState.loading) {
-      // Already loading — poll until done then render
-      const wait = setInterval(() => {
-        if (!mpState.loading) { clearInterval(wait); mpRender(); }
-      }, 200);
-    } else if (!mpState.data.length) {
-      mpLoad();
-    } else {
-      mpRender();
-    }
-  }
-};
+// ── Manager Portal ready ──────────────────────────────────────────────────────
 </script>
 </body>
 </html>
