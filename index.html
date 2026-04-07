@@ -482,14 +482,14 @@ html, body {
 .ti-submitting-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: spin .65s linear infinite; }
 .ti-submitting-text { color: #fff; font-size: 14px; font-weight: 600; }
 /* ── MANAGER PORTAL ── */
-.mp-stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 16px; }
+.mp-stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 16px; margin-top: 4px; }
 @media (min-width: 768px) { .mp-stat-grid { grid-template-columns: repeat(4,1fr); } }
 .mp-stat-card {
   background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-  padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.mp-stat-label { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
-.mp-stat-val { font-size: 24px; font-weight: 800; }
+.mp-stat-label { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.mp-stat-val { font-size: 22px; font-weight: 800; line-height: 1.2; }
 
 .mp-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
 .mp-tab {
@@ -715,7 +715,7 @@ html, body {
   </div>
 
   <!-- ── MANAGER VERIFICATION PORTAL ── -->
-  <div class="section" id="section-manager">
+  <div class="section" id="section-manager" style="overflow:visible;">
     <div id="mp-root" style="padding:0 0 32px;"></div>
   </div>
 
@@ -1751,7 +1751,7 @@ function mpRender() {
 
   // Header
   let html = `
-  <div style="background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px 0;position:sticky;top:59px;z-index:10;">
+  <div style="background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px 0;position:sticky;top:0;z-index:10;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <div>
         <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;">Verification Portal</div>
@@ -1771,7 +1771,7 @@ function mpRender() {
       </button>
     </div>
   </div>
-  <div style="padding:16px;">`;
+  <div style="padding:16px; padding-top:20px;">`;
 
   if (mpState.selected) {
     html += mpDetailHtml(mpState.selected);
