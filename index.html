@@ -676,7 +676,7 @@ html, body {
   <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
     <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
   </div>
-  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager');setTimeout(()=>{if(!mpState.data.length&&!mpState.loading)mpLoad();else mpRender();},100)">
+  <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager')">
     <span class="sidebar-icon">🔍</span><span class="sidebar-label">Verification Portal</span>
   </div>
 </div>
@@ -883,7 +883,7 @@ html, body {
     <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
       <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
     </div>
-    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager');setTimeout(()=>{if(!mpState.data.length&&!mpState.loading)mpLoad();else mpRender();},100)">
+    <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager')">
       <span class="drawer-icon">🔍</span><span class="drawer-label">Verification Portal</span><span class="drawer-arrow">›</span>
     </div>
   </div>
@@ -1461,9 +1461,21 @@ async function mpSaveStatus(id, status, note) {
   mpRender();
 }
 
-// ── Lightbox ──────────────────────────────────────────────────────────────────
+// ── Convert Google Drive share URL to direct image URL ────────────────────────
+function mpDriveImg(url) {
+  if (!url) return '';
+  // Match: https://drive.google.com/file/d/FILE_ID/view...
+  const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+  // Already a direct URL or other format — return as-is
+  return url;
+}
 function mpOpenLightbox(src) {
-  document.getElementById('mp-lightbox-img').src = src;
+  // Use full resolution for lightbox
+  const fullSrc = src.includes('drive.google.com/thumbnail') 
+    ? src.replace(/&sz=w\d+/, '&sz=w2000')
+    : src;
+  document.getElementById('mp-lightbox-img').src = fullSrc;
   document.getElementById('mp-lightbox').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
@@ -1598,10 +1610,10 @@ function mpDetailHtml(entry) {
   const battDot = mpBattDot(entry.battery);
   const damage  = Array.isArray(entry.damage) ? entry.damage : (entry.damage ? entry.damage.split(',').map(s=>s.trim()).filter(Boolean) : []);
   const photos  = [
-    { label:'Front',       src: entry.photoFront },
-    { label:'LCD Display', src: entry.photoLcd   },
-    { label:'Back',        src: entry.photoBack  },
-    { label:'IMEI / Info', src: entry.photoInfo  },
+    { label:'Front',       src: mpDriveImg(entry.photoFront) },
+    { label:'LCD Display', src: mpDriveImg(entry.photoLcd)   },
+    { label:'Back',        src: mpDriveImg(entry.photoBack)  },
+    { label:'IMEI / Info', src: mpDriveImg(entry.photoInfo)  },
   ];
   const fromArchive = ['verified','rejected'].includes(entry.status);
 
@@ -1831,13 +1843,12 @@ const _origSwitchTab = switchTab;
 switchTab = function(tab) {
   _origSwitchTab(tab);
   if (tab === 'manager') {
-    setTimeout(function() {
-      if (!mpState.data.length && !mpState.loading) {
-        mpLoad();
-      } else {
-        mpRender();
-      }
-    }, 50);
+    // Section is now active — load or re-render
+    if (!mpState.data.length && !mpState.loading) {
+      mpLoad();
+    } else if (!mpState.loading) {
+      mpRender();
+    }
   }
 };
 </script>
