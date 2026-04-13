@@ -1073,7 +1073,7 @@ html, body {
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-    sendEmailVerification, signOut, onAuthStateChanged }
+    sendEmailVerification, signOut, onAuthStateChanged, sendPasswordResetEmail }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -1212,6 +1212,11 @@ html, body {
       vf.style.display = '';
       document.getElementById('forgotError').classList.remove('show');
       document.getElementById('forgotEmail').value = '';
+      document.getElementById('forgotEmail').style.display = '';
+      const fb = document.getElementById('forgotBtn');
+      if (fb) { fb.style.display = ''; fb.disabled = false; }
+      document.getElementById('forgotBtnText').classList.remove('hide');
+      document.getElementById('forgotSpinner').classList.remove('show');
     } else {
       vs.style.display = '';
       document.getElementById('loginError').classList.remove('show');
@@ -1233,21 +1238,23 @@ html, body {
 
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
-      const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
       await sendPasswordResetEmail(auth, email);
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       errEl.style.color = '#22c55e';
-      errEl.innerHTML = '✓ Reset link sent!<br><span style="font-size:11px;opacity:.85;">Open the email in Safari (not Mail app) — iOS Mail can invalidate the link before you tap it.</span>';
+      errEl.innerHTML = '✓ Reset link sent to <strong>' + email + '</strong>.<br><span style="font-size:11px;opacity:.85;line-height:1.6;display:block;margin-top:4px;">⚠️ Open the email in <strong>Safari</strong>, not the Mail app — iOS Mail can consume the link before you tap it.</span>';
       errEl.classList.add('show');
-      setTimeout(() => toggleAuthView('signin'), 6000);
+      btn.style.display = 'none';
+      document.getElementById('forgotEmail').style.display = 'none';
     } catch(err) {
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       const map = {
         'auth/user-not-found':         'No account found with this email.',
         'auth/invalid-email':          'Invalid email address.',
+        'auth/too-many-requests':      'Too many attempts. Try again later.',
         'auth/network-request-failed': 'Network error. Check your connection.',
+        'auth/unauthorized-domain':    'Domain not authorized. Contact your admin.',
       };
-      showErr(map[err.code] || 'Failed to send reset link. Try again.');
+      showErr(map[err.code] || ('Error: ' + (err.code || err.message || 'Try again.')));
     }
   };
 
