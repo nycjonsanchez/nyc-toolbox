@@ -1220,12 +1220,12 @@ html, body {
     try {
       const snap = await getDocs(collection(db, 'users'));
       if (snap.empty) {
-        root.innerHTML = '<div class="admin-empty">No users found in Firestore.</div>';
+        root.innerHTML = '<div class="admin-empty">No users found in Firestore.<br><small style="color:var(--muted)">Make sure the users collection exists and rules allow reads.</small></div>';
         return;
       }
       const rows = [];
       snap.forEach(d => rows.push({ uid: d.id, ...d.data() }));
-      rows.sort((a,b) => (ROLE_LEVEL[b.role]||1) - (ROLE_LEVEL[a.role]||1));
+      rows.sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
 
       const roleOptions = ['admin','sub_admin','rep2','rep1']
         .map(r => `<option value="${r}">${r.replace('_',' ')}</option>`).join('');
@@ -1262,7 +1262,12 @@ html, body {
         if (sel) sel.value = u.role || 'rep1';
       });
     } catch(e) {
-      root.innerHTML = `<div class="admin-empty">Error loading users: ${e.message}</div>`;
+      console.error('adminLoad error:', e);
+      root.innerHTML = `<div class="admin-empty">
+        ❌ Error loading users<br>
+        <small style="color:var(--muted);font-family:monospace;">${e.code || e.message}</small><br><br>
+        <small style="color:var(--muted)">Check Firestore rules: allow admins to read the users collection.</small>
+      </div>`;
     }
   };
 
