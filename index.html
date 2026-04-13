@@ -235,6 +235,19 @@ html, body {
 .admin-save-btn:hover { background: var(--red); color: #fff; }
 .admin-save-btn:disabled { opacity: .4; pointer-events: none; }
 .admin-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+.admin-pending-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.admin-pending-row:last-child { border-bottom: none; }
+.admin-approve-btn, .admin-deny-btn {
+  border: none; border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+}
+.admin-approve-btn { background: #22c55e; color: #fff; }
+.admin-deny-btn    { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
 .admin-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
 
 /* Mobile: card layout instead of table */
@@ -788,25 +801,6 @@ html, body {
       <hr class="login-divider" />
       <div class="login-switch">Back to <span onclick="toggleAuthView('signin')">Sign in</span></div>
     </div>
-
-    <!-- SET NEW PASSWORD VIEW (opened via email link) -->
-    <div id="view-resetpw" style="display:none;">
-      <div style="text-align:center; margin-bottom:14px;">
-        <div style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:4px;">Set New Password</div>
-        <div style="font-size:12px; color:var(--muted); line-height:1.5;">Enter a new password for your account.</div>
-      </div>
-      <input class="login-field" id="resetEmail" type="email" placeholder="Email" readonly
-        style="background:var(--surface2,#2a2a2a);opacity:.7;cursor:default;" />
-      <input class="login-field" id="resetPass" type="password" placeholder="New password (min 8 chars)"
-        autocomplete="new-password" onkeydown="if(event.key==='Enter')document.getElementById('resetPassConfirm').focus()" />
-      <input class="login-field" id="resetPassConfirm" type="password" placeholder="Confirm new password"
-        autocomplete="new-password" onkeydown="if(event.key==='Enter')doConfirmReset()" />
-      <button class="login-btn" id="resetBtn" onclick="doConfirmReset()">
-        <span class="login-btn-text" id="resetBtnText">Set New Password</span>
-        <div class="login-spinner" id="resetSpinner"></div>
-      </button>
-      <div class="login-error" id="resetError"></div>
-    </div>
   </div>
 </div>
 
@@ -1092,8 +1086,7 @@ html, body {
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-    sendEmailVerification, signOut, onAuthStateChanged, sendPasswordResetEmail,
-    confirmPasswordReset, verifyPasswordResetCode }
+    sendEmailVerification, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -1118,8 +1111,10 @@ html, body {
   async function fetchUserRole(uid) {
     try {
       const snap = await getDoc(doc(db, 'users', uid));
-      return snap.exists() ? (snap.data().role || 'rep1') : 'rep1';
-    } catch(e) { return 'rep1'; }
+      if (!snap.exists()) return { role: 'rep1', status: 'pending' };
+      const d = snap.data();
+      return { role: d.role || 'rep1', status: d.status || 'approved' };
+    } catch(e) { return { role: 'rep1', status: 'approved' }; }
   }
 
   function applyRoleUI(role) {
@@ -1159,9 +1154,45 @@ html, body {
   onAuthStateChanged(auth, async (user) => {
     document.getElementById('auth-loading').classList.add('hidden');
     if (user) {
+      const { role, status } = await fetchUserRole(user.uid);
+
+      // ── PENDING APPROVAL GATE ──────────────────────────────────────────
+      if (status === 'pending') {
+        await signOut(auth);
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app-shell').classList.remove('show');
+        const vs = document.getElementById('view-signin');
+        const vu = document.getElementById('view-signup');
+        const vf = document.getElementById('view-forgot');
+        if (vs) vs.style.display = '';
+        if (vu) vu.style.display = 'none';
+        if (vf) vf.style.display = 'none';
+        const errEl = document.getElementById('loginError');
+        errEl.style.color = '#d97706';
+        errEl.innerHTML = '⏳ Your account is pending approval.<br><small style="opacity:.8">You\'ll be able to sign in once an admin approves your request.</small>';
+        errEl.classList.add('show');
+        return;
+      }
+      // ── DENIED ────────────────────────────────────────────────────────
+      if (status === 'denied') {
+        await signOut(auth);
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app-shell').classList.remove('show');
+        const vs = document.getElementById('view-signin');
+        const vu = document.getElementById('view-signup');
+        const vf = document.getElementById('view-forgot');
+        if (vs) vs.style.display = '';
+        if (vu) vu.style.display = 'none';
+        if (vf) vf.style.display = 'none';
+        const errEl = document.getElementById('loginError');
+        errEl.style.color = 'var(--red)';
+        errEl.textContent = '❌ Your account request was not approved. Contact your manager.';
+        errEl.classList.add('show');
+        return;
+      }
+
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-shell').classList.add('show');
-      const role = await fetchUserRole(user.uid);
       applyRoleUI(role);
       // Backfill email into Firestore if missing
       if (user.email) {
@@ -1224,8 +1255,7 @@ html, body {
     const vs = document.getElementById('view-signin');
     const vu = document.getElementById('view-signup');
     const vf = document.getElementById('view-forgot');
-    const vr = document.getElementById('view-resetpw');
-    [vs, vu, vf, vr].forEach(el => { if (el) el.style.display = 'none'; });
+    [vs, vu, vf].forEach(el => { if (el) el.style.display = 'none'; });
     if (view === 'signup') {
       vu.style.display = '';
       document.getElementById('signupError').classList.remove('show');
@@ -1233,85 +1263,13 @@ html, body {
       vf.style.display = '';
       document.getElementById('forgotError').classList.remove('show');
       document.getElementById('forgotEmail').value = '';
-    } else if (view === 'resetpw') {
-      vr.style.display = '';
-      document.getElementById('resetError').classList.remove('show');
     } else {
       vs.style.display = '';
       document.getElementById('loginError').classList.remove('show');
     }
   };
 
-  // ── HANDLE PASSWORD RESET LINK (from email) ───────────────────────────────
-  (async function checkResetLink() {
-    const params = new URLSearchParams(window.location.search);
-    const mode   = params.get('mode');
-    const oobCode = params.get('oobCode');
-    if (mode !== 'resetPassword' || !oobCode) return;
-
-    // Show login screen first (in case it's hidden during auth loading)
-    document.getElementById('auth-loading').style.display = 'none';
-    document.getElementById('login-screen').classList.remove('hidden');
-    toggleAuthView('resetpw');
-
-    try {
-      // Verify the code is valid and get the email it belongs to
-      const email = await verifyPasswordResetCode(auth, oobCode);
-      document.getElementById('resetEmail').value = email;
-      // Clean the URL so a refresh doesn't re-trigger this
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch(e) {
-      document.getElementById('resetError').style.color = '';
-      document.getElementById('resetError').textContent =
-        'This reset link has expired or already been used. Request a new one.';
-      document.getElementById('resetError').classList.add('show');
-      document.getElementById('resetBtn').disabled = true;
-      setTimeout(() => toggleAuthView('forgot'), 4000);
-    }
-
-    // Store oobCode for use in doConfirmReset
-    window.__resetOobCode = oobCode;
-  })();
-
-  // ── CONFIRM PASSWORD RESET ────────────────────────────────────────────────
-  window.doConfirmReset = async function() {
-    const pass    = document.getElementById('resetPass').value;
-    const confirm = document.getElementById('resetPassConfirm').value;
-    const btn     = document.getElementById('resetBtn');
-    const btnText = document.getElementById('resetBtnText');
-    const spinner = document.getElementById('resetSpinner');
-    const errEl   = document.getElementById('resetError');
-    const oobCode = window.__resetOobCode;
-
-    function showErr(m) { errEl.textContent = m; errEl.style.color = ''; errEl.classList.add('show'); }
-    errEl.classList.remove('show');
-
-    if (!oobCode) return showErr('Reset code missing. Please use the link from your email.');
-    if (pass.length < 8) return showErr('Password must be at least 8 characters.');
-    if (pass !== confirm) return showErr('Passwords do not match.');
-
-    btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
-    try {
-      await confirmPasswordReset(auth, oobCode, pass);
-      btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
-      errEl.style.color = '#22c55e';
-      errEl.textContent = '✓ Password updated! Redirecting to sign in…';
-      errEl.classList.add('show');
-      window.__resetOobCode = null;
-      setTimeout(() => toggleAuthView('signin'), 2500);
-    } catch(e) {
-      btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
-      const map = {
-        'auth/expired-action-code':  'Reset link has expired. Request a new one.',
-        'auth/invalid-action-code':  'Reset link is invalid or already used.',
-        'auth/weak-password':        'Password is too weak. Use at least 8 characters.',
-        'auth/user-disabled':        'This account has been disabled.',
-      };
-      showErr(map[e.code] || ('Error: ' + (e.code || e.message)));
-    }
-  };
-
-
+  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
   window.doForgotPassword = async function() {
     const email   = document.getElementById('forgotEmail').value.trim();
     const btn     = document.getElementById('forgotBtn');
@@ -1326,15 +1284,13 @@ html, body {
 
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
-      await sendPasswordResetEmail(auth, email, {
-        url: 'https://nycjonsanchez.github.io/nyc-toolbox'
-      });
+      const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+      await sendPasswordResetEmail(auth, email);
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       errEl.style.color = '#22c55e';
-      errEl.innerHTML = '✓ Reset link sent to <strong>' + email + '</strong>.<br><span style="font-size:11px;opacity:.85;line-height:1.6;display:block;margin-top:4px;">⚠️ Open the email in <strong>Safari</strong>, not the Mail app — iOS Mail can consume the link before you tap it.</span>';
+      errEl.innerHTML = '✓ Reset link sent!<br><span style="font-size:11px;opacity:.85;">Open the email in Safari (not Mail app) — iOS Mail can invalidate the link before you tap it.</span>';
       errEl.classList.add('show');
-      btn.style.display = 'none';
-      document.getElementById('forgotEmail').style.display = 'none';
+      setTimeout(() => toggleAuthView('signin'), 6000);
     } catch(err) {
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       const map = {
@@ -1368,8 +1324,8 @@ html, body {
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      // Set default role in Firestore
-      await setDoc(doc(db, 'users', cred.user.uid), { role: 'rep1', email: email }, { merge: true });
+      // New accounts start as pending — admin must approve before first login
+      await setDoc(doc(db, 'users', cred.user.uid), { role: 'rep1', status: 'pending', email: email }, { merge: true });
       await sendEmailVerification(cred.user);
       // Sign out and show confirmation
       await signOut(auth);
@@ -1377,9 +1333,9 @@ html, body {
       toggleAuthView('signin');
       const errSignin = document.getElementById('loginError');
       errSignin.style.color = '#22c55e';
-      errSignin.textContent = 'Account created! Check your email to verify, then sign in.';
+      errSignin.textContent = 'Account requested! An admin will review and approve your access.';
       errSignin.classList.add('show');
-      setTimeout(() => { errSignin.style.color = ''; errSignin.classList.remove('show'); }, 6000);
+      setTimeout(() => { errSignin.style.color = ''; errSignin.classList.remove('show'); }, 8000);
     } catch(err) {
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       const codeMap = {
@@ -1410,12 +1366,26 @@ html, body {
       }
       const rows = [];
       snap.forEach(d => rows.push({ uid: d.id, ...d.data() }));
-      rows.sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
+
+      // Split pending vs active
+      const pending  = rows.filter(u => u.status === 'pending');
+      const active   = rows.filter(u => u.status !== 'pending').sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
 
       const roleOptions = ['admin','sub_admin','rep2','rep1']
         .map(r => `<option value="${r}">${r.replace('_',' ')}</option>`).join('');
 
-      const tableRows = rows.map(u => `
+      // ── PENDING APPROVALS BLOCK ──────────────────────────────────────────
+      const pendingBlock = pending.length === 0
+        ? `<div style="padding:12px 16px;font-size:13px;color:var(--muted);">✓ No pending requests</div>`
+        : pending.map(u => `
+          <div class="admin-pending-row" id="prow-${u.uid}">
+            <div class="admin-user-email" style="flex:1;">${u.email || u.uid}</div>
+            <button class="admin-approve-btn" onclick="adminApprove('${u.uid}')">Approve</button>
+            <button class="admin-deny-btn"    onclick="adminDeny('${u.uid}')">Deny</button>
+          </div>`).join('');
+
+      // ── ACTIVE USERS TABLE ───────────────────────────────────────────────
+      const tableRows = active.map(u => `
         <tr>
           <td>
             <div class="admin-user-email">${u.email || '<span style="color:var(--muted);font-style:italic;font-size:12px;">no email stored</span>'}</div>
@@ -1430,6 +1400,13 @@ html, body {
         </tr>`).join('');
 
       root.innerHTML = `
+        <div style="padding:12px 16px 4px;font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;">
+          Pending Approvals ${pending.length > 0 ? `<span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:6px;">${pending.length}</span>` : ''}
+        </div>
+        <div style="border:1px solid var(--border);border-radius:10px;margin:0 16px 16px;overflow:hidden;">
+          ${pendingBlock}
+        </div>
+        <div style="padding:4px 16px 4px;font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;">Active Users</div>
         <table class="admin-table">
           <thead><tr>
             <th>User</th><th>Current Role</th><th>New Role</th>
@@ -1443,12 +1420,12 @@ html, body {
         </div>`;
 
       // Set select values to current roles
-      rows.forEach(u => {
+      active.forEach(u => {
         const sel = document.getElementById('sel-' + u.uid);
         if (sel) sel.value = u.role || 'rep1';
       });
       // Store row data for save
-      root._rows = rows;
+      root._rows = active;
     } catch(e) {
       console.error('adminLoad error:', e);
       root.innerHTML = `<div class="admin-empty">
@@ -1458,6 +1435,40 @@ html, body {
       </div>`;
     }
   };
+
+  window.adminApprove = async function(uid) {
+    const row = document.getElementById('prow-' + uid);
+    if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
+    try {
+      await updateDoc(doc(db, 'users', uid), { status: 'approved' });
+      if (row) {
+        row.innerHTML = `<div style="flex:1;font-size:13px;color:#22c55e;">✓ Approved</div>`;
+        row.style.opacity = '1';
+        setTimeout(() => adminLoad(), 1500);
+      }
+    } catch(e) {
+      if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+      alert('Error approving: ' + (e.message || e.code));
+    }
+  };
+
+  window.adminDeny = async function(uid) {
+    if (!confirm('Deny this user? This will permanently remove their account.')) return;
+    const row = document.getElementById('prow-' + uid);
+    if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
+    try {
+      await updateDoc(doc(db, 'users', uid), { status: 'denied' });
+      if (row) {
+        row.innerHTML = `<div style="flex:1;font-size:13px;color:var(--red);">✗ Denied</div>`;
+        row.style.opacity = '1';
+        setTimeout(() => adminLoad(), 1500);
+      }
+    } catch(e) {
+      if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+      alert('Error denying: ' + (e.message || e.code));
+    }
+  };
+
 
   window.adminSaveAll = async function() {
     const root = document.getElementById('admin-root');
@@ -1475,6 +1486,22 @@ html, body {
       if (newRole === (u.role || 'rep1')) continue; // unchanged
       try {
         await updateDoc(doc(db, 'users', u.uid), { role: newRole });
+        // Update badge
+        const badge = document.getElementById('badge-' + u.uid);
+        if (badge) { badge.className = 'admin-role-badge ' + newRole; badge.textContent = newRole.replace('_',' '); }
+        u.role = newRole; // update local state
+        saved++;
+      } catch(e) { errors++; }
+    }
+    btn.disabled = false; btn.textContent = 'Save Changes';
+    if (saved === 0 && errors === 0) {
+      status.style.color = 'var(--muted)'; status.textContent = 'No changes to save.';
+    } else if (errors === 0) {
+      status.style.color = '#22c55e'; status.textContent = `✓ ${saved} user${saved>1?'s':''} updated.`;
+    } else {
+      status.style.color = 'var(--red)'; status.textContent = `${saved} saved, ${errors} failed.`;
+    }
+
         // Update badge
         const badge = document.getElementById('badge-' + u.uid);
         if (badge) { badge.className = 'admin-role-badge ' + newRole; badge.textContent = newRole.replace('_',' '); }
