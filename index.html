@@ -788,6 +788,25 @@ html, body {
       <hr class="login-divider" />
       <div class="login-switch">Back to <span onclick="toggleAuthView('signin')">Sign in</span></div>
     </div>
+
+    <!-- SET NEW PASSWORD VIEW (opened via email link) -->
+    <div id="view-resetpw" style="display:none;">
+      <div style="text-align:center; margin-bottom:14px;">
+        <div style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:4px;">Set New Password</div>
+        <div style="font-size:12px; color:var(--muted); line-height:1.5;">Enter a new password for your account.</div>
+      </div>
+      <input class="login-field" id="resetEmail" type="email" placeholder="Email" readonly
+        style="background:var(--surface2,#2a2a2a);opacity:.7;cursor:default;" />
+      <input class="login-field" id="resetPass" type="password" placeholder="New password (min 8 chars)"
+        autocomplete="new-password" onkeydown="if(event.key==='Enter')document.getElementById('resetPassConfirm').focus()" />
+      <input class="login-field" id="resetPassConfirm" type="password" placeholder="Confirm new password"
+        autocomplete="new-password" onkeydown="if(event.key==='Enter')doConfirmReset()" />
+      <button class="login-btn" id="resetBtn" onclick="doConfirmReset()">
+        <span class="login-btn-text" id="resetBtnText">Set New Password</span>
+        <div class="login-spinner" id="resetSpinner"></div>
+      </button>
+      <div class="login-error" id="resetError"></div>
+    </div>
   </div>
 </div>
 
@@ -1073,7 +1092,8 @@ html, body {
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-    sendEmailVerification, signOut, onAuthStateChanged, sendPasswordResetEmail }
+    sendEmailVerification, signOut, onAuthStateChanged, sendPasswordResetEmail,
+    confirmPasswordReset, verifyPasswordResetCode }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -1204,7 +1224,8 @@ html, body {
     const vs = document.getElementById('view-signin');
     const vu = document.getElementById('view-signup');
     const vf = document.getElementById('view-forgot');
-    [vs, vu, vf].forEach(el => { if (el) el.style.display = 'none'; });
+    const vr = document.getElementById('view-resetpw');
+    [vs, vu, vf, vr].forEach(el => { if (el) el.style.display = 'none'; });
     if (view === 'signup') {
       vu.style.display = '';
       document.getElementById('signupError').classList.remove('show');
@@ -1212,18 +1233,85 @@ html, body {
       vf.style.display = '';
       document.getElementById('forgotError').classList.remove('show');
       document.getElementById('forgotEmail').value = '';
-      document.getElementById('forgotEmail').style.display = '';
-      const fb = document.getElementById('forgotBtn');
-      if (fb) { fb.style.display = ''; fb.disabled = false; }
-      document.getElementById('forgotBtnText').classList.remove('hide');
-      document.getElementById('forgotSpinner').classList.remove('show');
+    } else if (view === 'resetpw') {
+      vr.style.display = '';
+      document.getElementById('resetError').classList.remove('show');
     } else {
       vs.style.display = '';
       document.getElementById('loginError').classList.remove('show');
     }
   };
 
-  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
+  // ── HANDLE PASSWORD RESET LINK (from email) ───────────────────────────────
+  (async function checkResetLink() {
+    const params = new URLSearchParams(window.location.search);
+    const mode   = params.get('mode');
+    const oobCode = params.get('oobCode');
+    if (mode !== 'resetPassword' || !oobCode) return;
+
+    // Show login screen first (in case it's hidden during auth loading)
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('login-screen').classList.remove('hidden');
+    toggleAuthView('resetpw');
+
+    try {
+      // Verify the code is valid and get the email it belongs to
+      const email = await verifyPasswordResetCode(auth, oobCode);
+      document.getElementById('resetEmail').value = email;
+      // Clean the URL so a refresh doesn't re-trigger this
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch(e) {
+      document.getElementById('resetError').style.color = '';
+      document.getElementById('resetError').textContent =
+        'This reset link has expired or already been used. Request a new one.';
+      document.getElementById('resetError').classList.add('show');
+      document.getElementById('resetBtn').disabled = true;
+      setTimeout(() => toggleAuthView('forgot'), 4000);
+    }
+
+    // Store oobCode for use in doConfirmReset
+    window.__resetOobCode = oobCode;
+  })();
+
+  // ── CONFIRM PASSWORD RESET ────────────────────────────────────────────────
+  window.doConfirmReset = async function() {
+    const pass    = document.getElementById('resetPass').value;
+    const confirm = document.getElementById('resetPassConfirm').value;
+    const btn     = document.getElementById('resetBtn');
+    const btnText = document.getElementById('resetBtnText');
+    const spinner = document.getElementById('resetSpinner');
+    const errEl   = document.getElementById('resetError');
+    const oobCode = window.__resetOobCode;
+
+    function showErr(m) { errEl.textContent = m; errEl.style.color = ''; errEl.classList.add('show'); }
+    errEl.classList.remove('show');
+
+    if (!oobCode) return showErr('Reset code missing. Please use the link from your email.');
+    if (pass.length < 8) return showErr('Password must be at least 8 characters.');
+    if (pass !== confirm) return showErr('Passwords do not match.');
+
+    btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
+    try {
+      await confirmPasswordReset(auth, oobCode, pass);
+      btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
+      errEl.style.color = '#22c55e';
+      errEl.textContent = '✓ Password updated! Redirecting to sign in…';
+      errEl.classList.add('show');
+      window.__resetOobCode = null;
+      setTimeout(() => toggleAuthView('signin'), 2500);
+    } catch(e) {
+      btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
+      const map = {
+        'auth/expired-action-code':  'Reset link has expired. Request a new one.',
+        'auth/invalid-action-code':  'Reset link is invalid or already used.',
+        'auth/weak-password':        'Password is too weak. Use at least 8 characters.',
+        'auth/user-disabled':        'This account has been disabled.',
+      };
+      showErr(map[e.code] || ('Error: ' + (e.code || e.message)));
+    }
+  };
+
+
   window.doForgotPassword = async function() {
     const email   = document.getElementById('forgotEmail').value.trim();
     const btn     = document.getElementById('forgotBtn');
@@ -1238,7 +1326,9 @@ html, body {
 
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email, {
+        url: 'https://nycjonsanchez.github.io/nyc-toolbox'
+      });
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       errEl.style.color = '#22c55e';
       errEl.innerHTML = '✓ Reset link sent to <strong>' + email + '</strong>.<br><span style="font-size:11px;opacity:.85;line-height:1.6;display:block;margin-top:4px;">⚠️ Open the email in <strong>Safari</strong>, not the Mail app — iOS Mail can consume the link before you tap it.</span>';
@@ -1250,11 +1340,9 @@ html, body {
       const map = {
         'auth/user-not-found':         'No account found with this email.',
         'auth/invalid-email':          'Invalid email address.',
-        'auth/too-many-requests':      'Too many attempts. Try again later.',
         'auth/network-request-failed': 'Network error. Check your connection.',
-        'auth/unauthorized-domain':    'Domain not authorized. Contact your admin.',
       };
-      showErr(map[err.code] || ('Error: ' + (err.code || err.message || 'Try again.')));
+      showErr(map[err.code] || 'Failed to send reset link. Try again.');
     }
   };
 
