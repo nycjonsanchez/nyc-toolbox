@@ -248,9 +248,7 @@ html, body {
   .admin-table tr:hover td { background: transparent; }
   .admin-user-email { font-size: 14px; }
   .admin-user-uid { display: none; }
-  .admin-row-actions { display: flex; gap: 8px; align-items: center; }
-  .admin-row-actions .admin-role-select { flex: 1; }
-  .admin-row-actions .admin-save-btn { flex: 0 0 70px; padding: 8px 0; width: 70px; }
+
 }
 
 /* ── APP SHELL ── */
@@ -1328,29 +1326,34 @@ html, body {
             <div class="admin-user-email">${u.email || '<span style="color:var(--muted);font-style:italic;font-size:12px;">no email stored</span>'}</div>
             <div class="admin-user-uid">${u.uid}</div>
           </td>
-          <td><span class="admin-role-badge ${u.role || 'rep1'}">${(u.role||'rep1').replace('_',' ')}</span></td>
-          <td class="admin-row-actions">
-            <select class="admin-role-select" id="sel-${u.uid}" onchange="adminMarkDirty('${u.uid}')">
+          <td><span class="admin-role-badge ${u.role || 'rep1'}" id="badge-${u.uid}">${(u.role||'rep1').replace('_',' ')}</span></td>
+          <td>
+            <select class="admin-role-select" id="sel-${u.uid}">
               ${roleOptions}
             </select>
-            <button class="admin-save-btn" id="save-${u.uid}" disabled
-              onclick="adminSaveRole('${u.uid}')">Save</button>
           </td>
         </tr>`).join('');
 
       root.innerHTML = `
         <table class="admin-table">
           <thead><tr>
-            <th>User</th><th>Current Role</th><th>Change Role</th>
+            <th>User</th><th>Current Role</th><th>New Role</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
-        </table>`;
+        </table>
+        <div style="padding:16px;">
+          <button class="admin-save-btn" id="save-all-btn" style="width:100%;padding:12px 0;font-size:14px;"
+            onclick="adminSaveAll()">Save Changes</button>
+          <div id="save-all-status" style="text-align:center;margin-top:10px;font-size:13px;min-height:18px;"></div>
+        </div>`;
 
       // Set select values to current roles
       rows.forEach(u => {
         const sel = document.getElementById('sel-' + u.uid);
         if (sel) sel.value = u.role || 'rep1';
       });
+      // Store row data for save
+      root._rows = rows;
     } catch(e) {
       console.error('adminLoad error:', e);
       root.innerHTML = `<div class="admin-empty">
@@ -1361,31 +1364,38 @@ html, body {
     }
   };
 
-  window.adminMarkDirty = function(uid) {
-    const btn = document.getElementById('save-' + uid);
-    if (btn) btn.disabled = false;
-  };
-
-  window.adminSaveRole = async function(uid) {
-    const sel = document.getElementById('sel-' + uid);
-    const btn = document.getElementById('save-' + uid);
-    if (!sel || !btn) return;
-    const newRole = sel.value;
-    btn.disabled = true; btn.textContent = '…';
-    try {
-      await updateDoc(doc(db, 'users', uid), { role: newRole });
-      btn.textContent = '✓ Saved';
-      setTimeout(() => { btn.textContent = 'Save'; }, 2000);
-      // Refresh the badge in the row
-      const badge = sel.closest('tr').querySelector('.admin-role-badge');
-      if (badge) {
-        badge.className = 'admin-role-badge ' + newRole;
-        badge.textContent = newRole.replace('_',' ');
-      }
-    } catch(e) {
-      btn.disabled = false; btn.textContent = 'Error';
-      setTimeout(() => { btn.textContent = 'Save'; btn.disabled = false; }, 2000);
+  window.adminSaveAll = async function() {
+    const root = document.getElementById('admin-root');
+    const rows = root._rows;
+    if (!rows) return;
+    const btn = document.getElementById('save-all-btn');
+    const status = document.getElementById('save-all-status');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    status.textContent = ''; status.style.color = '';
+    let saved = 0, errors = 0;
+    for (const u of rows) {
+      const sel = document.getElementById('sel-' + u.uid);
+      if (!sel) continue;
+      const newRole = sel.value;
+      if (newRole === (u.role || 'rep1')) continue; // unchanged
+      try {
+        await updateDoc(doc(db, 'users', u.uid), { role: newRole });
+        // Update badge
+        const badge = document.getElementById('badge-' + u.uid);
+        if (badge) { badge.className = 'admin-role-badge ' + newRole; badge.textContent = newRole.replace('_',' '); }
+        u.role = newRole; // update local state
+        saved++;
+      } catch(e) { errors++; }
     }
+    btn.disabled = false; btn.textContent = 'Save Changes';
+    if (saved === 0 && errors === 0) {
+      status.style.color = 'var(--muted)'; status.textContent = 'No changes to save.';
+    } else if (errors === 0) {
+      status.style.color = '#22c55e'; status.textContent = `✓ ${saved} user${saved>1?'s':''} updated.`;
+    } else {
+      status.style.color = 'var(--red)'; status.textContent = `${saved} saved, ${errors} failed.`;
+    }
+    setTimeout(() => { status.textContent = ''; }, 3000);
   };
 
   function showError(msg) {
