@@ -534,7 +534,7 @@ html, body {
 .tradein-back-bar {
   display: flex; align-items: center; gap: 12px;
   padding: 12px 16px; border-bottom: 1px solid var(--border);
-  background: var(--card); position: sticky; top: 59px; z-index: 50;
+  background: var(--card); position: sticky; top: 0; z-index: 50;
 }
 .tradein-back-btn {
   background: none; border: 1px solid var(--border); border-radius: 8px;
@@ -893,11 +893,11 @@ html, body {
         <button class="tradein-back-btn" onclick="closeQRLibrary()">‹ Back to Tools</button>
         <span class="tradein-portal-title">Google Reviews — QR Codes</span>
       </div>
-      <div style="padding:14px 16px 8px;">
+      <div style="padding:12px 16px 8px; position:sticky; top:49px; z-index:40; background:var(--surface);">
         <input id="qr-search" class="ti-input" type="text" placeholder="Search store…"
           style="width:100%;font-size:14px;" oninput="qrFilter(this.value)" />
       </div>
-      <div id="qr-grid" style="padding:0 12px 80px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:8px;"></div>
+      <div id="qr-grid" style="padding:4px 12px 80px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:4px;"></div>
     </div>
     <div id="qr-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
       <button onclick="closeQRLightbox()" style="position:absolute;top:20px;right:20px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;">×</button>
@@ -1889,14 +1889,15 @@ function openQRLibrary() {
   tools.style.display='none';if(header)header.style.display='none';
   portal.style.display='block';
   document.getElementById('qr-search').value='';
+  // Scroll to top so back bar sits flush under the header
+  const content=document.querySelector('.content');
+  if(content)content.scrollTop=0; else window.scrollTo(0,0);
   if(qrFiles.length===0)qrLoad();else qrRender(qrFiles);
 }
 function closeQRLibrary(){
   const portal=document.getElementById('qr-library'),tools=document.getElementById('tools-grid'),header=document.getElementById('tools-header');
   if(portal)portal.style.display='none';if(tools)tools.style.display='';if(header)header.style.display='';
 }
-
-// Use JSONP to avoid CORS issues on iOS Safari
 function qrLoad(){
   const grid=document.getElementById('qr-grid');
   grid.innerHTML='<div class="qr-empty">Loading QR codes…</div>';
@@ -1904,47 +1905,36 @@ function qrLoad(){
   const script=document.createElement('script');
   let done=false;
   const timeout=setTimeout(()=>{
-    if(done)return;done=true;
-    delete window[cbName];script.remove();
-    grid.innerHTML='<div class="qr-empty">❌ Timed out. Check Apps Script deployment.<br><small style="color:var(--muted);">Make sure access is set to “Anyone”.</small></div>';
+    if(done)return;done=true;delete window[cbName];script.remove();
+    grid.innerHTML='<div class="qr-empty">❌ Timed out. Check Apps Script deployment.</div>';
   },10000);
   window[cbName]=function(data){
-    if(done)return;done=true;
-    clearTimeout(timeout);delete window[cbName];script.remove();
-    if(data.status!=='ok'||!data.files||!data.files.length){
-      grid.innerHTML='<div class="qr-empty">No QR codes found in folder.</div>';return;
-    }
+    if(done)return;done=true;clearTimeout(timeout);delete window[cbName];script.remove();
+    if(data.status!=='ok'||!data.files||!data.files.length){grid.innerHTML='<div class="qr-empty">No QR codes found in folder.</div>';return;}
     qrFiles=data.files;qrRender(qrFiles);
   };
   script.src=QR_SCRIPT_URL+'?callback='+cbName;
   script.onerror=function(){
-    if(done)return;done=true;
-    clearTimeout(timeout);delete window[cbName];script.remove();
-    grid.innerHTML='<div class="qr-empty">❌ Failed to load. Redeploy the Apps Script with access set to “Anyone”.</div>';
+    if(done)return;done=true;clearTimeout(timeout);delete window[cbName];script.remove();
+    grid.innerHTML='<div class="qr-empty">❌ Failed to load. Redeploy Apps Script with access set to “Anyone”.</div>';
   };
   document.head.appendChild(script);
 }
-
 function qrRender(files){
   const grid=document.getElementById('qr-grid');
   if(!files.length){grid.innerHTML='<div class="qr-empty">No stores match your search.</div>';return;}
-  // Group by folder/region
   const groups={};
-  files.forEach(f=>{
-    const key=f.folder||'Other';
-    if(!groups[key])groups[key]=[];
-    groups[key].push(f);
-  });
+  files.forEach(f=>{const key=f.folder||'Other';if(!groups[key])groups[key]=[];groups[key].push(f);});
   const sorted=Object.keys(groups).sort();
   let html='';
   sorted.forEach(region=>{
-    html+=`<div style="grid-column:1/-1;padding:10px 4px 4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">${region}</div>`;
+    html+=`<div style="grid-column:1/-1;padding:12px 4px 4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">${region}</div>`;
     html+=groups[region].map(f=>`<div class="qr-card" onclick="openQRLightbox('${f.id}','${f.name.replace(/'/g,"\'")}')"><div class="qr-card-img-wrap"><img src="https://drive.google.com/thumbnail?id=${f.id}&sz=w300" loading="lazy" alt="${f.name}" onerror="this.parentElement.innerHTML='<div style=\'font-size:40px;padding:20px;\'>⭐</div>'" /></div><div class="qr-card-foot">${f.name}</div></div>`).join('');
   });
   grid.innerHTML=html;
 }
 function qrFilter(q){
-  const filtered=q.trim()?qrFiles.filter(f=>f.name.toLowerCase().includes(q.toLowerCase())):qrFiles;
+  const filtered=q.trim()?qrFiles.filter(f=>f.name.toLowerCase().includes(q.toLowerCase())||((f.folder||'').toLowerCase().includes(q.toLowerCase()))):qrFiles;
   qrRender(filtered);
 }
 function openQRLightbox(id,name){
