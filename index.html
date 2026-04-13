@@ -157,7 +157,7 @@ html, body {
   border: 1px solid rgba(205,4,11,.3);
   border-radius: 8px; padding: 11px 14px;
   color: #ff6b6b; font-size: 13px;
-  text-align: center; line-height: 1.4; display: none;
+  text-align: center; line-height: 1.6; display: none;
 }
 .login-error.show { display: block; }
 .login-btn.secondary {
@@ -1237,9 +1237,9 @@ html, body {
       await sendPasswordResetEmail(auth, email);
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       errEl.style.color = '#22c55e';
-      errEl.textContent = 'Reset link sent! Check your inbox.';
+      errEl.innerHTML = '✓ Reset link sent!<br><span style="font-size:11px;opacity:.85;">Open the email in Safari (not Mail app) — iOS Mail can invalidate the link before you tap it.</span>';
       errEl.classList.add('show');
-      setTimeout(() => toggleAuthView('signin'), 3000);
+      setTimeout(() => toggleAuthView('signin'), 6000);
     } catch(err) {
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       const map = {
