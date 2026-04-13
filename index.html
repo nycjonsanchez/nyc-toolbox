@@ -979,6 +979,20 @@ html, body {
 
   </div>
 
+  <!-- ── ADMIN SECTION ── -->
+  <div id="section-admin" class="section">
+    <div class="admin-section">
+      <div class="admin-section-title">Admin Panel</div>
+      <div class="admin-section-sub">Manage user roles across your organization</div>
+      <div class="admin-toolbar">
+        <button class="admin-refresh-btn" onclick="adminLoad()">↻ Refresh</button>
+      </div>
+      <div class="admin-card">
+        <div id="admin-root"><div class="admin-loading">Loading users…</div></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
@@ -1012,23 +1026,7 @@ html, body {
 </button>
 
 </div>
-</div>
-
-<!-- ── ADMIN SECTION ── -->
-<div id="section-admin" class="section">
-  <div class="admin-section">
-    <div class="admin-section-title">Admin Panel</div>
-    <div class="admin-section-sub">Manage user roles across your organization</div>
-    <div class="admin-toolbar">
-      <button class="admin-refresh-btn" onclick="adminLoad()">↻ Refresh</button>
-    </div>
-    <div class="admin-card">
-      <div id="admin-root"><div class="admin-loading">Loading users…</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── LIGHTBOX ── -->
+</div><!-- ── LIGHTBOX ── -->
 <div id="mp-lightbox" style="display:none;" onclick="mpCloseLightbox()">
   <img id="mp-lightbox-img" src="" alt="photo" />
   <div id="mp-lightbox-close">✕</div>
