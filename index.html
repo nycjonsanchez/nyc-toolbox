@@ -241,8 +241,8 @@ html, body {
 }
 .admin-pending-row:last-child { border-bottom: none; }
 .admin-approve-btn, .admin-deny-btn {
-  border: none; border-radius: 6px; padding: 6px 12px;
-  font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px;
+  font-weight: 700; cursor: pointer; white-space: nowrap;
   font-family: 'Inter', sans-serif; transition: opacity .15s;
 }
 .admin-approve-btn { background: #22c55e; color: #fff; }
@@ -259,8 +259,8 @@ html, body {
   padding: 11px 22px; cursor: pointer; white-space: nowrap;
   transition: opacity .15s; flex-shrink: 0;
 }
-.admin-float-save:hover  { opacity: .85; }
-.admin-float-save:active { opacity: .7;  }
+.admin-float-save:hover { opacity: .85; }
+.admin-float-save:active { opacity: .7; }
 .admin-float-save:disabled { opacity: .4; pointer-events: none; }
 .admin-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
 
@@ -1350,7 +1350,7 @@ html, body {
 
   // ── ADMIN PANEL ────────────────────────────────────────────────────────────
   window.adminLoad = async function() {
-    const root    = document.getElementById('admin-root');
+    const root     = document.getElementById('admin-root');
     const floatBar = document.getElementById('admin-float-bar');
     if (!root) return;
     const lvl = (window.ROLE_LEVEL && window.currentRole) ? (window.ROLE_LEVEL[window.currentRole] || 1) : 1;
@@ -1363,34 +1363,32 @@ html, body {
     try {
       const snap = await getDocs(collection(db, 'users'));
       if (snap.empty) {
-        root.innerHTML = '<div class="admin-empty">No users found in Firestore.</div>';
+        root.innerHTML = '<div class="admin-empty">No users found in Firestore.<br><small style="color:var(--muted)">Make sure the users collection exists and rules allow reads.</small></div>';
         return;
       }
       const allRows = [];
       snap.forEach(d => allRows.push({ uid: d.id, ...d.data() }));
 
-      // Pending = explicitly pending OR no status field (created before approval system)
-      const pending = allRows.filter(u => u.status === 'pending' || u.status === undefined || u.status === null);
-      const active  = allRows.filter(u => u.status === 'approved' || u.status === 'denied')
+      // Only explicit status:'pending' goes to approval queue
+      // Legacy accounts with no status field are treated as approved
+      const pending = allRows.filter(u => u.status === 'pending');
+      const active  = allRows.filter(u => u.status !== 'pending')
                              .sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
 
       const roleOptions = ['admin','sub_admin','rep2','rep1']
         .map(r => `<option value="${r}">${r.replace('_',' ')}</option>`).join('');
 
-      // ── Pending approvals ─────────────────────────────────────────────────
       const pendingHTML = pending.length === 0
         ? `<div style="padding:12px 16px;font-size:13px;color:var(--muted);">✓ No pending requests</div>`
         : pending.map(u => `
             <div class="admin-pending-row" id="prow-${u.uid}">
               <div style="flex:1;min-width:0;">
                 <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.email || u.uid}</div>
-                ${!u.status ? '<div style="font-size:11px;color:var(--muted);">No status — needs review</div>' : ''}
               </div>
               <button class="admin-approve-btn" onclick="adminApprove('${u.uid}')">Approve</button>
               <button class="admin-deny-btn"    onclick="adminDeny('${u.uid}')">Deny</button>
             </div>`).join('');
 
-      // ── Active users ──────────────────────────────────────────────────────
       const tableRows = active.map(u => `
         <tr>
           <td>
@@ -1405,17 +1403,17 @@ html, body {
           </td>
         </tr>`).join('');
 
-      const pendingLabel = pending.length > 0
-        ? `Pending Approvals <span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px;">${pending.length}</span>`
-        : `Pending Approvals`;
+      const badge = pending.length > 0
+        ? ` <span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px;">${pending.length}</span>`
+        : '';
 
       root.innerHTML = `
-        <div style="padding:12px 0 4px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">${pendingLabel}</div>
+        <div style="padding:12px 0 4px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">Pending Approvals${badge}</div>
         <div style="border:1px solid var(--border);border-radius:10px;margin:0 0 16px;overflow:hidden;">${pendingHTML}</div>
         <div style="padding:4px 0;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">Active Users</div>
         <table class="admin-table">
           <thead><tr><th>User</th><th>Current Role</th><th>New Role</th></tr></thead>
-          <tbody>${tableRows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No approved users yet</td></tr>'}</tbody>
+          <tbody>${tableRows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No active users yet</td></tr>'}</tbody>
         </table>`;
 
       active.forEach(u => {
@@ -1423,12 +1421,13 @@ html, body {
         if (sel) sel.value = u.role || 'rep1';
       });
       root._rows = active;
-      if (floatBar) floatBar.style.display = active.length ? 'flex' : 'none';
+      if (floatBar) floatBar.style.display = 'flex';
     } catch(e) {
       console.error('adminLoad error:', e);
       root.innerHTML = `<div class="admin-empty">
         ❌ Error loading users<br>
-        <small style="color:var(--muted);font-family:monospace;">${e.code || e.message}</small>
+        <small style="color:var(--muted);font-family:monospace;">${e.code || e.message}</small><br><br>
+        <small style="color:var(--muted)">Check Firestore rules: allow admins to read the users collection.</small>
       </div>`;
     }
   };
@@ -1438,11 +1437,11 @@ html, body {
     if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
     try {
       await updateDoc(doc(db, 'users', uid), { status: 'approved' });
-      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:#22c55e;padding:4px 0;">✓ Approved</div>`; row.style.opacity='1'; }
+      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:#22c55e;padding:4px 0;">✓ Approved</div>`; row.style.opacity = '1'; }
       setTimeout(() => adminLoad(), 1200);
     } catch(e) {
-      if (row) { row.style.opacity='1'; row.style.pointerEvents=''; }
-      alert('Error: ' + (e.message || e.code));
+      if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+      alert('Error approving: ' + (e.message || e.code));
     }
   };
 
@@ -1452,17 +1451,17 @@ html, body {
     if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
     try {
       await updateDoc(doc(db, 'users', uid), { status: 'denied' });
-      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:var(--red);padding:4px 0;">✗ Denied</div>`; row.style.opacity='1'; }
+      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:var(--red);padding:4px 0;">✗ Denied</div>`; row.style.opacity = '1'; }
       setTimeout(() => adminLoad(), 1200);
     } catch(e) {
-      if (row) { row.style.opacity='1'; row.style.pointerEvents=''; }
-      alert('Error: ' + (e.message || e.code));
+      if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+      alert('Error denying: ' + (e.message || e.code));
     }
   };
 
   window.adminSaveAll = async function() {
-    const root = document.getElementById('admin-root');
-    const rows = root._rows;
+    const root   = document.getElementById('admin-root');
+    const rows   = root._rows;
     if (!rows) return;
     const btn    = document.getElementById('save-all-btn');
     const status = document.getElementById('save-all-status');
