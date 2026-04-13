@@ -1098,6 +1098,12 @@ html, body {
       document.getElementById('app-shell').classList.add('show');
       const role = await fetchUserRole(user.uid);
       applyRoleUI(role);
+      // Backfill email into Firestore if missing
+      if (user.email) {
+        try {
+          await setDoc(doc(db, 'users', user.uid), { email: user.email }, { merge: true });
+        } catch(e) {}
+      }
       initApp();
     } else {
       currentRole = 'rep1';
@@ -1231,7 +1237,7 @@ html, body {
       const tableRows = rows.map(u => `
         <tr>
           <td>
-            <div class="admin-user-email">${u.email || '—'}</div>
+            <div class="admin-user-email">${u.email || '<span style="color:var(--muted);font-style:italic;font-size:12px;">no email stored</span>'}</div>
             <div class="admin-user-uid">${u.uid}</div>
           </td>
           <td><span class="admin-role-badge ${u.role || 'rep1'}">${(u.role||'rep1').replace('_',' ')}</span></td>
