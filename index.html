@@ -1015,7 +1015,7 @@ html, body {
 </div>
 
 <!-- ── ADMIN SECTION ── -->
-<div id="section-admin" class="section" style="display:none;">
+<div id="section-admin" class="section">
   <div class="admin-section">
     <div class="admin-section-title">Admin Panel</div>
     <div class="admin-section-sub">Manage user roles across your organization</div>
@@ -1058,8 +1058,8 @@ html, body {
   const db   = getFirestore(app);
 
   // ── ROLE SYSTEM ────────────────────────────────────────────────────────────
-  const ROLE_LEVEL = { admin:4, sub_admin:3, rep2:2, rep1:1 };
-  let currentRole = 'rep1';
+  window.ROLE_LEVEL = { admin:4, sub_admin:3, rep2:2, rep1:1 };
+  window.window.currentRole = 'rep1';
 
   async function fetchUserRole(uid) {
     try {
@@ -1069,8 +1069,8 @@ html, body {
   }
 
   function applyRoleUI(role) {
-    currentRole = role;
-    const lvl = ROLE_LEVEL[role] || 1;
+    window.currentRole = role;
+    const lvl = window.ROLE_LEVEL[role] || 1;
     const badge = document.getElementById('role-badge');
     if (badge) {
       badge.textContent = role.replace('_',' ');
@@ -1211,7 +1211,7 @@ html, body {
   window.adminLoad = async function() {
     const root = document.getElementById('admin-root');
     if (!root) return;
-    const lvl = ROLE_LEVEL[currentRole] || 1;
+    const lvl = (window.ROLE_LEVEL && window.currentRole) ? (window.ROLE_LEVEL[window.currentRole] || 1) : 1;
     if (lvl < 4) {
       root.innerHTML = '<div class="admin-empty">⚠️ Admin access required.</div>';
       return;
@@ -1736,8 +1736,8 @@ function closeMenu() {
   document.getElementById('fabBtn').classList.remove('open');
 }
 function switchTab(tab) {
-  const _rl = (typeof ROLE_LEVEL!=='undefined'&&typeof currentRole!=='undefined')
-    ?(ROLE_LEVEL[currentRole]||1):1;
+  const _rl = (window.ROLE_LEVEL && window.currentRole)
+    ? (window.ROLE_LEVEL[window.currentRole] || 1) : 1;
   if (tab==='manager'&&_rl<3) return;
   if (tab==='admin'&&_rl<4) return;
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
