@@ -182,7 +182,7 @@ html, body {
 .admin-section { padding: 20px 20px 80px; }
 .admin-section-title { font-size: 22px; font-weight: 900; letter-spacing: -.4px; margin-bottom: 4px; color: var(--text); }
 .admin-section-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
-.admin-toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+.admin-toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
 .admin-refresh-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 7px 16px; border-radius: 100px;
@@ -197,18 +197,44 @@ html, body {
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
-.admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+.admin-block-label {
+  padding: 10px 16px 8px;
+  font-size: 10px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; align-items: center; gap: 6px;
+}
+.admin-pending-badge {
+  background: #d97706; color: #fff;
+  border-radius: 99px; padding: 1px 7px; font-size: 10px;
+}
+.admin-pending-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.admin-pending-row:last-child { border-bottom: none; }
+.admin-pending-email { flex: 1; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-approve-btn, .admin-deny-btn {
+  border: none; border-radius: 7px; padding: 6px 14px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  white-space: nowrap; font-family: 'Inter', sans-serif; transition: opacity .15s;
+}
+.admin-approve-btn { background: #22c55e; color: #fff; }
+.admin-deny-btn    { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.admin-approve-btn:active, .admin-deny-btn:active { opacity: .7; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .admin-table th {
-  background: var(--surface); padding: 10px 14px;
+  background: var(--surface); padding: 10px 16px;
   text-align: left; font-size: 10px; font-weight: 800;
   text-transform: uppercase; letter-spacing: .08em;
   color: var(--muted); border-bottom: 1px solid var(--border);
 }
-.admin-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table tr:hover td { background: var(--surface); }
-.admin-user-email { font-weight: 600; font-size: 13px; word-break: break-all; }
-.admin-user-uid { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: monospace; word-break: break-all; }
+.admin-user-email { font-weight: 600; font-size: 13px; }
+.admin-user-uid { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: monospace; }
 .admin-role-badge {
   display: inline-block; padding: 3px 10px; border-radius: 20px;
   font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -235,19 +261,7 @@ html, body {
 .admin-save-btn:hover { background: var(--red); color: #fff; }
 .admin-save-btn:disabled { opacity: .4; pointer-events: none; }
 .admin-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
-.admin-pending-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px;
-}
-.admin-pending-row:last-child { border-bottom: none; }
-.admin-approve-btn, .admin-deny-btn {
-  border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px;
-  font-weight: 700; cursor: pointer; white-space: nowrap;
-  font-family: 'Inter', sans-serif; transition: opacity .15s;
-}
-.admin-approve-btn { background: #22c55e; color: #fff; }
-.admin-deny-btn    { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
-.admin-approve-btn:active, .admin-deny-btn:active { opacity: .7; }
+.admin-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
 #admin-float-bar {
   position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px;
   padding: 12px 16px; background: var(--bg); border-top: 1px solid var(--border); z-index: 10;
@@ -262,7 +276,6 @@ html, body {
 .admin-float-save:hover { opacity: .85; }
 .admin-float-save:active { opacity: .7; }
 .admin-float-save:disabled { opacity: .4; pointer-events: none; }
-.admin-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
 
 /* Mobile: card layout instead of table */
 @media (max-width: 600px) {
@@ -1050,8 +1063,8 @@ html, body {
       <div class="admin-toolbar">
         <button class="admin-refresh-btn" onclick="adminLoad()">↻ Refresh</button>
       </div>
-      <div class="admin-card">
-        <div id="admin-root"><div class="admin-loading">Loading users…</div></div>
+      <div class="admin-card" id="admin-root">
+        <div class="admin-loading">Loading users…</div>
       </div>
       <div id="admin-float-bar" style="display:none;">
         <div id="save-all-status"></div>
@@ -1173,28 +1186,26 @@ html, body {
     document.getElementById('auth-loading').classList.add('hidden');
     if (user) {
       const { role, status } = await fetchUserRole(user.uid);
-
       if (status === 'pending') {
         await signOut(auth);
         document.getElementById('login-screen').classList.remove('hidden');
         document.getElementById('app-shell').classList.remove('show');
-        const errEl = document.getElementById('loginError');
-        errEl.style.color = '#d97706';
-        errEl.innerHTML = '⏳ Your account is pending approval.<br><small style="opacity:.8">You\'ll be able to sign in once an admin approves your request.</small>';
-        errEl.classList.add('show');
+        const e2 = document.getElementById('loginError');
+        e2.style.color = '#d97706';
+        e2.innerHTML = '⏳ Your account is pending approval.<br><small style="opacity:.8">You\'ll be able to sign in once an admin approves your request.</small>';
+        e2.classList.add('show');
         return;
       }
       if (status === 'denied') {
         await signOut(auth);
         document.getElementById('login-screen').classList.remove('hidden');
         document.getElementById('app-shell').classList.remove('show');
-        const errEl = document.getElementById('loginError');
-        errEl.style.color = 'var(--red)';
-        errEl.textContent = '❌ Your account request was not approved. Contact your manager.';
-        errEl.classList.add('show');
+        const e2 = document.getElementById('loginError');
+        e2.style.color = 'var(--red)';
+        e2.textContent = '❌ Your account request was not approved. Contact your manager.';
+        e2.classList.add('show');
         return;
       }
-
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-shell').classList.add('show');
       applyRoleUI(role);
@@ -1325,7 +1336,6 @@ html, body {
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      // New accounts start as pending — admin must approve before first login
       await setDoc(doc(db, 'users', cred.user.uid), { role: 'rep1', status: 'pending', email: email, createdAt: Date.now() }, { merge: true });
       await sendEmailVerification(cred.user);
       await signOut(auth);
@@ -1363,14 +1373,12 @@ html, body {
     try {
       const snap = await getDocs(collection(db, 'users'));
       if (snap.empty) {
-        root.innerHTML = '<div class="admin-empty">No users found in Firestore.<br><small style="color:var(--muted)">Make sure the users collection exists and rules allow reads.</small></div>';
+        root.innerHTML = '<div class="admin-empty">No users found in Firestore.</div>';
         return;
       }
       const allRows = [];
       snap.forEach(d => allRows.push({ uid: d.id, ...d.data() }));
 
-      // Only explicit status:'pending' goes to approval queue
-      // Legacy accounts with no status field are treated as approved
       const pending = allRows.filter(u => u.status === 'pending');
       const active  = allRows.filter(u => u.status !== 'pending')
                              .sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
@@ -1378,42 +1386,37 @@ html, body {
       const roleOptions = ['admin','sub_admin','rep2','rep1']
         .map(r => `<option value="${r}">${r.replace('_',' ')}</option>`).join('');
 
-      const pendingHTML = pending.length === 0
+      const pendingRows = pending.length === 0
         ? `<div style="padding:12px 16px;font-size:13px;color:var(--muted);">✓ No pending requests</div>`
         : pending.map(u => `
             <div class="admin-pending-row" id="prow-${u.uid}">
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.email || u.uid}</div>
-              </div>
+              <div class="admin-pending-email">${u.email || u.uid}</div>
               <button class="admin-approve-btn" onclick="adminApprove('${u.uid}')">Approve</button>
               <button class="admin-deny-btn"    onclick="adminDeny('${u.uid}')">Deny</button>
             </div>`).join('');
 
-      const tableRows = active.map(u => `
+      const activeRows = active.map(u => `
         <tr>
           <td>
-            <div class="admin-user-email">${u.email || '<span style="color:var(--muted);font-style:italic;font-size:12px;">no email stored</span>'}</div>
+            <div class="admin-user-email">${u.email || '<span style="color:var(--muted);font-style:italic;">no email</span>'}</div>
             <div class="admin-user-uid">${u.uid}</div>
           </td>
-          <td><span class="admin-role-badge ${u.role || 'rep1'}" id="badge-${u.uid}">${(u.role||'rep1').replace('_',' ')}</span></td>
-          <td>
-            <select class="admin-role-select" id="sel-${u.uid}">
-              ${roleOptions}
-            </select>
-          </td>
+          <td><span class="admin-role-badge ${u.role||'rep1'}" id="badge-${u.uid}">${(u.role||'rep1').replace('_',' ')}</span></td>
+          <td><select class="admin-role-select" id="sel-${u.uid}">${roleOptions}</select></td>
         </tr>`).join('');
 
-      const badge = pending.length > 0
-        ? ` <span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px;">${pending.length}</span>`
-        : '';
+      const badgeHtml = pending.length > 0
+        ? `<span class="admin-pending-badge">${pending.length}</span>` : '';
 
       root.innerHTML = `
-        <div style="padding:12px 0 4px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">Pending Approvals${badge}</div>
-        <div style="border:1px solid var(--border);border-radius:10px;margin:0 0 16px;overflow:hidden;">${pendingHTML}</div>
-        <div style="padding:4px 0;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">Active Users</div>
+        <div class="admin-block-label">Pending Approvals ${badgeHtml}</div>
+        ${pendingRows}
+        <div class="admin-block-label" style="margin-top:0;border-top:2px solid var(--border);">Active Users</div>
         <table class="admin-table">
-          <thead><tr><th>User</th><th>Current Role</th><th>New Role</th></tr></thead>
-          <tbody>${tableRows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No active users yet</td></tr>'}</tbody>
+          <thead><tr>
+            <th>User</th><th>Current Role</th><th>New Role</th>
+          </tr></thead>
+          <tbody>${activeRows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No active users yet</td></tr>'}</tbody>
         </table>`;
 
       active.forEach(u => {
@@ -1421,14 +1424,9 @@ html, body {
         if (sel) sel.value = u.role || 'rep1';
       });
       root._rows = active;
-      if (floatBar) floatBar.style.display = 'flex';
+      if (floatBar) floatBar.style.display = active.length ? 'flex' : 'none';
     } catch(e) {
-      console.error('adminLoad error:', e);
-      root.innerHTML = `<div class="admin-empty">
-        ❌ Error loading users<br>
-        <small style="color:var(--muted);font-family:monospace;">${e.code || e.message}</small><br><br>
-        <small style="color:var(--muted)">Check Firestore rules: allow admins to read the users collection.</small>
-      </div>`;
+      root.innerHTML = `<div class="admin-empty">❌ Error loading users<br><small style="color:var(--muted);font-family:monospace;">${e.code||e.message}</small></div>`;
     }
   };
 
@@ -1437,11 +1435,11 @@ html, body {
     if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
     try {
       await updateDoc(doc(db, 'users', uid), { status: 'approved' });
-      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:#22c55e;padding:4px 0;">✓ Approved</div>`; row.style.opacity = '1'; }
+      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:#22c55e;">✓ Approved</div>`; row.style.opacity = '1'; }
       setTimeout(() => adminLoad(), 1200);
     } catch(e) {
       if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
-      alert('Error approving: ' + (e.message || e.code));
+      alert('Error: ' + (e.message || e.code));
     }
   };
 
@@ -1451,11 +1449,11 @@ html, body {
     if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
     try {
       await updateDoc(doc(db, 'users', uid), { status: 'denied' });
-      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:var(--red);padding:4px 0;">✗ Denied</div>`; row.style.opacity = '1'; }
+      if (row) { row.innerHTML = `<div style="flex:1;font-size:13px;color:var(--red);">✗ Denied</div>`; row.style.opacity = '1'; }
       setTimeout(() => adminLoad(), 1200);
     } catch(e) {
       if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
-      alert('Error denying: ' + (e.message || e.code));
+      alert('Error: ' + (e.message || e.code));
     }
   };
 
@@ -1477,8 +1475,7 @@ html, body {
         await updateDoc(doc(db, 'users', u.uid), { role: newRole });
         const badge = document.getElementById('badge-' + u.uid);
         if (badge) { badge.className = 'admin-role-badge ' + newRole; badge.textContent = newRole.replace('_',' '); }
-        u.role = newRole;
-        saved++;
+        u.role = newRole; saved++;
       } catch(e) { errors++; }
     }
     btn.disabled = false; btn.textContent = 'Save Changes';
@@ -1576,9 +1573,6 @@ const TOOLS = [
   { label:'VZ Infocenter Promotion', sub:'Promotions Hub',          icon:'📋', color:'blue',   url:'https://urldefense.proofpoint.com/v2/url?u=https-3A__ilogin.verizon.com_newextranet_servlet_ExtranetController-3Fmethod-3DGetVzIDForAboutYou-26AuthModel-3DOneSSO-26AppType-3DFederation-26app-3Dpos-26TYPE-3D33554433-26REALMOID-3D06-2D0008795c-2D31df-2D1ff5-2D8539-2D9bb88c6c0000-26GUID-3D-26SMAUTHREASON-3D0-26METHOD-3DGET-26SMAGENTNAME-3D-24SM-24CI09LY-252f1uk3W8O-252f6F5RjP-252bKu93-252bRj4pRML64XVf6HgJRtCUBcPWytRMCLjfjMPCx-26TARGET-3D-24SM-24https-253a-252f-252finfomanager-252everizon-252ecom-252fcontent-252fkm-252fcategories-252fpromotions-252ehtml&d=DwMFAw&c=euGZstcaTDllvimEN8b7jXrwqOf-v5A_CdpgnVfiiMM&r=bvjPS2qChCtn3oJ7xOsN8J33nLXRv7_ze5VoMKB41p8&m=OjhacwgcItQ3nH2boUFTYGDJvGwH_K-3tmjWAyHL_-T42xjSvGZHqbpdgOb1UETZ&s=tqnw_6SxM8mBMl5Hgqo1SzC_AZ4a2AG3EIjTJRLxZAw&e=' },
   { label:'HR Portal',             sub:'Handbook',                icon:'👤', color:'purple', url:'https://drive.google.com/file/d/1sw_GEPSZrvx-kSSYisW_rcReYNWdDGPc/view' },
   { label:'Trade-In Intake',       sub:'Log a device trade-in',   icon:'📱', color:'red',    onclick:'openTradeIn()' },
-  { label:'Pull Through Tracker',  sub:'Accessories per ticket',  icon:'🛒', color:'amber',  onclick:'alert("Coming soon!")' },
-  { label:'Perks Attach',          sub:'Bundle rate checker',     icon:'⭐', color:'purple', onclick:'alert("Coming soon!")' },
-  { label:'Premium Mix',           sub:'Plan tier calculator',    icon:'🏆', color:'teal',   onclick:'alert("Coming soon!")' },
 ];
 
 const LINKS = [
