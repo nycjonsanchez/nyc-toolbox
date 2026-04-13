@@ -235,31 +235,43 @@ html, body {
 .admin-save-btn:hover { background: var(--red); color: #fff; }
 .admin-save-btn:disabled { opacity: .4; pointer-events: none; }
 .admin-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+/* ── Pending approval rows ── */
+.admin-pending-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.admin-pending-row:last-child { border-bottom: none; }
+.admin-approve-btn, .admin-deny-btn {
+  border: none; border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  font-family: 'Inter', sans-serif; transition: opacity .15s;
+}
+.admin-approve-btn { background: #22c55e; color: #fff; }
+.admin-deny-btn    { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+.admin-approve-btn:active, .admin-deny-btn:active { opacity: .7; }
+/* ── Sticky save bar ── */
 #admin-float-bar {
   position: sticky; bottom: 0;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
   background: var(--bg);
   border-top: 1px solid var(--border);
-  padding: 12px 16px;
-  display: flex; align-items: center; gap: 12px;
   z-index: 10;
-  margin: 0 -16px; /* bleed to edges of card */
 }
-#save-all-status {
-  flex: 1; font-size: 13px; min-height: 18px;
-}
+#save-all-status { flex: 1; font-size: 13px; }
 .admin-float-save {
   border: none; border-radius: 10px;
   background: var(--red); color: #fff;
   font-family: 'Inter', sans-serif;
   font-size: 14px; font-weight: 700;
-  padding: 11px 22px; cursor: pointer;
-  white-space: nowrap;
-  transition: opacity .15s;
-  flex-shrink: 0;
+  padding: 11px 22px; cursor: pointer; white-space: nowrap;
+  transition: opacity .15s; flex-shrink: 0;
 }
-.admin-float-save:hover  { opacity: .85; }
-.admin-float-save:active { opacity: .7; }
+.admin-float-save:hover   { opacity: .85; }
+.admin-float-save:active  { opacity: .7;  }
 .admin-float-save:disabled { opacity: .4; pointer-events: none; }
+
 .admin-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
 
 /* Mobile: card layout instead of table */
@@ -1051,7 +1063,6 @@ html, body {
       <div class="admin-card">
         <div id="admin-root"><div class="admin-loading">Loading users…</div></div>
       </div>
-      <!-- Sticky save bar — always visible, shown once users load -->
       <div id="admin-float-bar" style="display:none;">
         <div id="save-all-status"></div>
         <button class="admin-float-save" id="save-all-btn" onclick="adminSaveAll()">Save Changes</button>
@@ -1128,8 +1139,10 @@ html, body {
   async function fetchUserRole(uid) {
     try {
       const snap = await getDoc(doc(db, 'users', uid));
-      return snap.exists() ? (snap.data().role || 'rep1') : 'rep1';
-    } catch(e) { return 'rep1'; }
+      if (!snap.exists()) return { role: 'rep1', status: 'pending' };
+      const d = snap.data();
+      return { role: d.role || 'rep1', status: d.status || 'approved' };
+    } catch(e) { return { role: 'rep1', status: 'approved' }; }
   }
 
   function applyRoleUI(role) {
@@ -1169,9 +1182,31 @@ html, body {
   onAuthStateChanged(auth, async (user) => {
     document.getElementById('auth-loading').classList.add('hidden');
     if (user) {
+      const { role, status } = await fetchUserRole(user.uid);
+
+      if (status === 'pending') {
+        await signOut(auth);
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app-shell').classList.remove('show');
+        const errEl = document.getElementById('loginError');
+        errEl.style.color = '#d97706';
+        errEl.innerHTML = '⏳ Your account is pending approval.<br><small style="opacity:.8">You\'ll be able to sign in once an admin approves your request.</small>';
+        errEl.classList.add('show');
+        return;
+      }
+      if (status === 'denied') {
+        await signOut(auth);
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app-shell').classList.remove('show');
+        const errEl = document.getElementById('loginError');
+        errEl.style.color = 'var(--red)';
+        errEl.textContent = '❌ Your account request was not approved. Contact your manager.';
+        errEl.classList.add('show');
+        return;
+      }
+
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-shell').classList.add('show');
-      const role = await fetchUserRole(user.uid);
       applyRoleUI(role);
       // Backfill email into Firestore if missing
       if (user.email) {
@@ -1303,8 +1338,8 @@ html, body {
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      // Set default role in Firestore
-      await setDoc(doc(db, 'users', cred.user.uid), { role: 'rep1', email: email }, { merge: true });
+      // New accounts start pending — admin must approve before first login
+      await setDoc(doc(db, 'users', cred.user.uid), { role: 'rep1', status: 'pending', email: email }, { merge: true });
       await sendEmailVerification(cred.user);
       // Sign out and show confirmation
       await signOut(auth);
@@ -1312,9 +1347,9 @@ html, body {
       toggleAuthView('signin');
       const errSignin = document.getElementById('loginError');
       errSignin.style.color = '#22c55e';
-      errSignin.textContent = 'Account created! Check your email to verify, then sign in.';
+      errSignin.textContent = 'Account requested! An admin will review and approve your access.';
       errSignin.classList.add('show');
-      setTimeout(() => { errSignin.style.color = ''; errSignin.classList.remove('show'); }, 6000);
+      setTimeout(() => { errSignin.style.color = ''; errSignin.classList.remove('show'); }, 8000);
     } catch(err) {
       btn.disabled = false; btnText.classList.remove('hide'); spinner.classList.remove('show');
       const codeMap = {
@@ -1337,20 +1372,36 @@ html, body {
       return;
     }
     root.innerHTML = '<div class="admin-loading">Loading users…</div>';
+    const floatBar = document.getElementById('admin-float-bar');
+    if (floatBar) floatBar.style.display = 'none';
     try {
       const snap = await getDocs(collection(db, 'users'));
       if (snap.empty) {
         root.innerHTML = '<div class="admin-empty">No users found in Firestore.<br><small style="color:var(--muted)">Make sure the users collection exists and rules allow reads.</small></div>';
         return;
       }
-      const rows = [];
-      snap.forEach(d => rows.push({ uid: d.id, ...d.data() }));
-      rows.sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
+      const allRows = [];
+      snap.forEach(d => allRows.push({ uid: d.id, ...d.data() }));
+
+      const pending = allRows.filter(u => u.status === 'pending');
+      const active  = allRows.filter(u => u.status !== 'pending')
+                             .sort((a,b) => (window.ROLE_LEVEL[b.role]||1) - (window.ROLE_LEVEL[a.role]||1));
 
       const roleOptions = ['admin','sub_admin','rep2','rep1']
         .map(r => `<option value="${r}">${r.replace('_',' ')}</option>`).join('');
 
-      const tableRows = rows.map(u => `
+      // ── Pending approvals block ───────────────────────────────────────────
+      const pendingHTML = pending.length === 0
+        ? `<div style="padding:12px 16px;font-size:13px;color:var(--muted);">✓ No pending requests</div>`
+        : pending.map(u => `
+            <div class="admin-pending-row" id="prow-${u.uid}">
+              <div style="flex:1;font-size:13px;">${u.email || u.uid}</div>
+              <button class="admin-approve-btn" onclick="adminApprove('${u.uid}')">Approve</button>
+              <button class="admin-deny-btn"    onclick="adminDeny('${u.uid}')">Deny</button>
+            </div>`).join('');
+
+      // ── Active users table ────────────────────────────────────────────────
+      const tableRows = active.map(u => `
         <tr>
           <td>
             <div class="admin-user-email">${u.email || '<span style="color:var(--muted);font-style:italic;font-size:12px;">no email stored</span>'}</div>
@@ -1365,6 +1416,13 @@ html, body {
         </tr>`).join('');
 
       root.innerHTML = `
+        <div style="padding:12px 16px 4px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">
+          Pending Approvals${pending.length > 0 ? ` <span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px;">${pending.length}</span>` : ''}
+        </div>
+        <div style="border:1px solid var(--border);border-radius:10px;margin:0 0 16px;overflow:hidden;">
+          ${pendingHTML}
+        </div>
+        <div style="padding:4px 0 4px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">Active Users</div>
         <table class="admin-table">
           <thead><tr>
             <th>User</th><th>Current Role</th><th>New Role</th>
@@ -1372,17 +1430,15 @@ html, body {
           <tbody>${tableRows}</tbody>
         </table>`;
 
-      // Show the sticky save bar now that users are loaded
-      const floatBar = document.getElementById('admin-float-bar');
-      if (floatBar) floatBar.style.display = 'flex';
-
       // Set select values to current roles
-      rows.forEach(u => {
+      active.forEach(u => {
         const sel = document.getElementById('sel-' + u.uid);
         if (sel) sel.value = u.role || 'rep1';
       });
-      // Store row data for save
-      root._rows = rows;
+      root._rows = active;
+
+      // Show sticky save bar
+      if (floatBar) floatBar.style.display = 'flex';
     } catch(e) {
       console.error('adminLoad error:', e);
       root.innerHTML = `<div class="admin-empty">
@@ -1392,6 +1448,41 @@ html, body {
       </div>`;
     }
   };
+
+  window.adminApprove = async function(uid) {
+    const row = document.getElementById('prow-' + uid);
+    if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
+    try {
+      await updateDoc(doc(db, 'users', uid), { status: 'approved' });
+      if (row) {
+        row.innerHTML = `<div style="flex:1;font-size:13px;color:#22c55e;padding:4px 0;">✓ Approved</div>`;
+        row.style.opacity = '1';
+        setTimeout(() => adminLoad(), 1500);
+      }
+    } catch(e) {
+      if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+      alert('Error approving: ' + (e.message || e.code));
+    }
+  };
+
+  window.adminDeny = async function(uid) {
+    if (!confirm('Deny this user? They will not be able to sign in.')) return;
+    const row = document.getElementById('prow-' + uid);
+    if (row) { row.style.opacity = '.4'; row.style.pointerEvents = 'none'; }
+    try {
+      await updateDoc(doc(db, 'users', uid), { status: 'denied' });
+      if (row) {
+        row.innerHTML = `<div style="flex:1;font-size:13px;color:var(--red);padding:4px 0;">✗ Denied</div>`;
+        row.style.opacity = '1';
+        setTimeout(() => adminLoad(), 1500);
+      }
+    } catch(e) {
+      if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+      alert('Error denying: ' + (e.message || e.code));
+    }
+  };
+
+
 
   window.adminSaveAll = async function() {
     const root = document.getElementById('admin-root');
