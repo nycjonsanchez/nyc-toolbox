@@ -236,6 +236,7 @@ html, body {
 .admin-save-btn:disabled { opacity: .4; pointer-events: none; }
 .admin-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
 .admin-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+/* ── Admin pending/float ── */
 .admin-pending-row { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); }
 .admin-pending-row:last-child { border-bottom:none; }
 .admin-pending-email { flex:1; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -249,6 +250,30 @@ html, body {
 .admin-float-save:hover { opacity:.85; }
 .admin-float-save:active { opacity:.7; }
 .admin-float-save:disabled { opacity:.4; pointer-events:none; }
+/* ── QR Library ── */
+.qr-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  cursor: pointer; transition: transform .15s, box-shadow .15s;
+  display: flex; flex-direction: column;
+}
+.qr-card:active { transform: scale(.96); }
+.qr-card:hover  { box-shadow: 0 4px 16px rgba(205,4,11,.12); border-color: var(--red); }
+.qr-card-img-wrap {
+  width: 100%; aspect-ratio: 1;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  padding: 12px; border-bottom: 1px solid var(--border);
+}
+.qr-card-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+.qr-card-foot {
+  padding: 8px 10px;
+  font-size: 11px; font-weight: 700; color: var(--text);
+  text-align: center; line-height: 1.3;
+}
+.qr-empty { text-align:center; padding:48px 20px; color:var(--muted); font-size:13px; }
+#qr-lightbox { display:none; }
+#qr-lightbox.open { display:flex; }
 
 /* Mobile: card layout instead of table */
 @media (max-width: 600px) {
@@ -881,6 +906,28 @@ html, body {
     <div class="section-header" id="tools-header"><div class="section-title">Tools</div></div>
     <div class="tools-grid" id="tools-grid"></div>
 
+    <!-- ── QR CODE LIBRARY ── -->
+    <div id="qr-library" style="display:none;">
+      <div class="tradein-back-bar">
+        <button class="tradein-back-btn" onclick="closeQRLibrary()">‹ Back to Tools</button>
+        <span class="tradein-portal-title">Google Reviews — QR Codes</span>
+      </div>
+      <div style="padding:14px 16px 8px;">
+        <input id="qr-search" class="ti-input" type="text" placeholder="Search store…"
+          style="width:100%;font-size:14px;"
+          oninput="qrFilter(this.value)" />
+      </div>
+      <div id="qr-grid" style="padding:0 12px 80px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:8px;"></div>
+    </div>
+
+    <!-- ── QR LIGHTBOX ── -->
+    <div id="qr-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+      <button onclick="closeQRLightbox()" style="position:absolute;top:20px;right:20px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;">×</button>
+      <div id="qr-lb-name" style="color:#fff;font-size:15px;font-weight:700;margin-bottom:14px;text-align:center;"></div>
+      <img id="qr-lb-img" src="" style="max-width:min(90vw,420px);max-height:65vh;border-radius:12px;background:#fff;padding:12px;" />
+      <a id="qr-lb-dl" href="" download style="margin-top:18px;background:var(--red);color:#fff;border:none;border-radius:10px;padding:13px 32px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;">⬇ Download QR Code</a>
+    </div>
+
     <!-- ── TRADE-IN INTAKE PORTAL ── -->
     <div id="tradein-portal" style="display:none;">
       <div class="tradein-back-bar">
@@ -1158,9 +1205,7 @@ html, body {
   onAuthStateChanged(auth, async (user) => {
     document.getElementById('auth-loading').classList.add('hidden');
     if (user) {
-      // Skip auth state handling while signup flow is in progress
       if (window._signingUp) return;
-
       const { role, status } = await fetchUserRole(user.uid);
       if (status === 'pending') {
         await signOut(auth);
@@ -1311,7 +1356,7 @@ html, body {
 
     btn.disabled = true; btnText.classList.add('hide'); spinner.classList.add('show');
     try {
-      window._signingUp = true; // Prevent onAuthStateChanged from interfering
+      window._signingUp = true;
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       try {
         await setDoc(doc(db, 'users', cred.user.uid), {
@@ -1348,40 +1393,37 @@ html, body {
 
   // ── ADMIN PANEL ────────────────────────────────────────────────────────────
   window.adminLoad = async function() {
-    const root = document.getElementById('admin-root');
-    const floatBar = document.getElementById('admin-float-bar');
-    if (!root) return;
-    const lvl = (window.ROLE_LEVEL && window.currentRole) ? (window.ROLE_LEVEL[window.currentRole]||1) : 1;
-    if (lvl < 4) { root.innerHTML = '<div class="admin-empty">⚠️ Admin access required.</div>'; return; }
-    root.innerHTML = '<div class="admin-loading">Loading users…</div>';
-    if (floatBar) floatBar.style.display = 'none';
-    try {
-      const snap = await getDocs(collection(db, 'users'));
-      if (snap.empty) { root.innerHTML = '<div class="admin-empty">No users found.</div>'; return; }
-      const allRows = [];
-      snap.forEach(d => allRows.push({ uid: d.id, ...d.data() }));
-      const pending = allRows.filter(u => u.status === 'pending');
-      const active  = allRows.filter(u => u.status !== 'pending')
-                             .sort((a,b) => (window.ROLE_LEVEL[b.role]||1)-(window.ROLE_LEVEL[a.role]||1));
-      const roleOptions = ['admin','sub_admin','rep2','rep1']
-        .map(r => `<option value="${r}">${r.replace('_',' ')}</option>`).join('');
-      const pendingRows = pending.length === 0
-        ? `<div style="padding:12px 16px;font-size:13px;color:var(--muted);">✓ No pending requests</div>`
-        : pending.map(u => `
+    const root=document.getElementById('admin-root');
+    const floatBar=document.getElementById('admin-float-bar');
+    if(!root) return;
+    const lvl=(window.ROLE_LEVEL&&window.currentRole)?(window.ROLE_LEVEL[window.currentRole]||1):1;
+    if(lvl<4){root.innerHTML='<div class="admin-empty">⚠️ Admin access required.</div>';return;}
+    root.innerHTML='<div class="admin-loading">Loading users…</div>';
+    if(floatBar)floatBar.style.display='none';
+    try{
+      const snap=await getDocs(collection(db,'users'));
+      if(snap.empty){root.innerHTML='<div class="admin-empty">No users found.</div>';return;}
+      const allRows=[];
+      snap.forEach(d=>allRows.push({uid:d.id,...d.data()}));
+      const pending=allRows.filter(u=>u.status==='pending');
+      const active=allRows.filter(u=>u.status!=='pending').sort((a,b)=>(window.ROLE_LEVEL[b.role]||1)-(window.ROLE_LEVEL[a.role]||1));
+      const roleOptions=['admin','sub_admin','rep2','rep1'].map(r=>`<option value="${r}">${r.replace('_',' ')}</option>`).join('');
+      const pendingRows=pending.length===0
+        ?`<div style="padding:12px 16px;font-size:13px;color:var(--muted);">✓ No pending requests</div>`
+        :pending.map(u=>`
             <div class="admin-pending-row" id="prow-${u.uid}">
               <div class="admin-pending-email">${u.email||u.uid}</div>
               <button class="admin-approve-btn" onclick="adminApprove('${u.uid}')">Approve</button>
               <button class="admin-deny-btn"    onclick="adminDeny('${u.uid}')">Deny</button>
             </div>`).join('');
-      const activeRows = active.map(u => `
+      const activeRows=active.map(u=>`
         <tr>
           <td><div class="admin-user-email">${u.email||'<span style="color:var(--muted);font-style:italic;">no email</span>'}</div><div class="admin-user-uid">${u.uid}</div></td>
           <td><span class="admin-role-badge ${u.role||'rep1'}" id="badge-${u.uid}">${(u.role||'rep1').replace('_',' ')}</span></td>
           <td><select class="admin-role-select" id="sel-${u.uid}">${roleOptions}</select></td>
         </tr>`).join('');
-      const badgeHtml = pending.length > 0
-        ? `<span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:6px;">${pending.length}</span>` : '';
-      root.innerHTML = `
+      const badgeHtml=pending.length>0?`<span style="background:#d97706;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:6px;">${pending.length}</span>`:'';
+      root.innerHTML=`
         <div style="padding:10px 16px 8px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:4px;">Pending Approvals${badgeHtml}</div>
         ${pendingRows}
         <div style="padding:10px 16px 8px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:2px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);">Active Users</div>
@@ -1389,60 +1431,35 @@ html, body {
           <thead><tr><th>User</th><th>Current Role</th><th>New Role</th></tr></thead>
           <tbody>${activeRows||'<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No active users yet</td></tr>'}</tbody>
         </table>`;
-      active.forEach(u => { const s=document.getElementById('sel-'+u.uid); if(s) s.value=u.role||'rep1'; });
-      root._rows = active;
-      if (floatBar) floatBar.style.display = active.length ? 'flex' : 'none';
-    } catch(e) {
-      root.innerHTML = `<div class="admin-empty">❌ Error: ${e.code||e.message}</div>`;
-    }
+      active.forEach(u=>{const s=document.getElementById('sel-'+u.uid);if(s)s.value=u.role||'rep1';});
+      root._rows=active;
+      if(floatBar)floatBar.style.display=active.length?'flex':'none';
+    }catch(e){root.innerHTML=`<div class="admin-empty">❌ Error: ${e.code||e.message}</div>`;}
   };
-
-  window.adminApprove = async function(uid) {
-    const row = document.getElementById('prow-'+uid);
-    if (row) { row.style.opacity='.4'; row.style.pointerEvents='none'; }
-    try {
-      await updateDoc(doc(db,'users',uid), { status:'approved' });
-      if (row) { row.innerHTML=`<div style="flex:1;font-size:13px;color:#22c55e;">✓ Approved</div>`; row.style.opacity='1'; }
-      setTimeout(()=>adminLoad(),1200);
-    } catch(e) {
-      if (row) { row.style.opacity='1'; row.style.pointerEvents=''; }
-      alert('Error: '+(e.message||e.code));
-    }
+  window.adminApprove=async function(uid){
+    const row=document.getElementById('prow-'+uid);
+    if(row){row.style.opacity='.4';row.style.pointerEvents='none';}
+    try{await updateDoc(doc(db,'users',uid),{status:'approved'});if(row){row.innerHTML=`<div style="flex:1;font-size:13px;color:#22c55e;">✓ Approved</div>`;row.style.opacity='1';}setTimeout(()=>adminLoad(),1200);}
+    catch(e){if(row){row.style.opacity='1';row.style.pointerEvents='';}alert('Error: '+(e.message||e.code));}
   };
-
-  window.adminDeny = async function(uid) {
-    if (!confirm('Deny this user? They will not be able to sign in.')) return;
-    const row = document.getElementById('prow-'+uid);
-    if (row) { row.style.opacity='.4'; row.style.pointerEvents='none'; }
-    try {
-      await updateDoc(doc(db,'users',uid), { status:'denied' });
-      if (row) { row.innerHTML=`<div style="flex:1;font-size:13px;color:var(--red);">✗ Denied</div>`; row.style.opacity='1'; }
-      setTimeout(()=>adminLoad(),1200);
-    } catch(e) {
-      if (row) { row.style.opacity='1'; row.style.pointerEvents=''; }
-      alert('Error: '+(e.message||e.code));
-    }
+  window.adminDeny=async function(uid){
+    if(!confirm('Deny this user? They will not be able to sign in.'))return;
+    const row=document.getElementById('prow-'+uid);
+    if(row){row.style.opacity='.4';row.style.pointerEvents='none';}
+    try{await updateDoc(doc(db,'users',uid),{status:'denied'});if(row){row.innerHTML=`<div style="flex:1;font-size:13px;color:var(--red);">✗ Denied</div>`;row.style.opacity='1';}setTimeout(()=>adminLoad(),1200);}
+    catch(e){if(row){row.style.opacity='1';row.style.pointerEvents='';}alert('Error: '+(e.message||e.code));}
   };
-
-  window.adminSaveAll = async function() {
-    const root=document.getElementById('admin-root');
-    const rows=root._rows; if (!rows) return;
-    const btn=document.getElementById('save-all-btn');
-    const status=document.getElementById('save-all-status');
-    btn.disabled=true; btn.textContent='Saving…';
-    status.textContent=''; status.style.color='';
+  window.adminSaveAll=async function(){
+    const root=document.getElementById('admin-root');const rows=root._rows;if(!rows)return;
+    const btn=document.getElementById('save-all-btn');const status=document.getElementById('save-all-status');
+    btn.disabled=true;btn.textContent='Saving…';status.textContent='';status.style.color='';
     let saved=0,errors=0;
-    for (const u of rows) {
-      const sel=document.getElementById('sel-'+u.uid); if(!sel) continue;
-      const newRole=sel.value; if(newRole===(u.role||'rep1')) continue;
-      try {
-        await updateDoc(doc(db,'users',u.uid),{role:newRole});
-        const badge=document.getElementById('badge-'+u.uid);
-        if(badge){badge.className='admin-role-badge '+newRole;badge.textContent=newRole.replace('_',' ');}
-        u.role=newRole; saved++;
-      } catch(e){errors++;}
+    for(const u of rows){
+      const sel=document.getElementById('sel-'+u.uid);if(!sel)continue;
+      const newRole=sel.value;if(newRole===(u.role||'rep1'))continue;
+      try{await updateDoc(doc(db,'users',u.uid),{role:newRole});const badge=document.getElementById('badge-'+u.uid);if(badge){badge.className='admin-role-badge '+newRole;badge.textContent=newRole.replace('_',' ');}u.role=newRole;saved++;}catch(e){errors++;}
     }
-    btn.disabled=false; btn.textContent='Save Changes';
+    btn.disabled=false;btn.textContent='Save Changes';
     if(saved===0&&errors===0){status.style.color='var(--muted)';status.textContent='No changes to save.';}
     else if(errors===0){status.style.color='#22c55e';status.textContent=`✓ ${saved} user${saved>1?'s':''} updated.`;}
     else{status.style.color='var(--red)';status.textContent=`${saved} saved, ${errors} failed.`;}
@@ -1533,7 +1550,7 @@ const TOOLS = [
   { label:'VZ Infocenter Promotion', sub:'Promotions Hub',          icon:'📋', color:'blue',   url:'https://urldefense.proofpoint.com/v2/url?u=https-3A__ilogin.verizon.com_newextranet_servlet_ExtranetController-3Fmethod-3DGetVzIDForAboutYou-26AuthModel-3DOneSSO-26AppType-3DFederation-26app-3Dpos-26TYPE-3D33554433-26REALMOID-3D06-2D0008795c-2D31df-2D1ff5-2D8539-2D9bb88c6c0000-26GUID-3D-26SMAUTHREASON-3D0-26METHOD-3DGET-26SMAGENTNAME-3D-24SM-24CI09LY-252f1uk3W8O-252f6F5RjP-252bKu93-252bRj4pRML64XVf6HgJRtCUBcPWytRMCLjfjMPCx-26TARGET-3D-24SM-24https-253a-252f-252finfomanager-252everizon-252ecom-252fcontent-252fkm-252fcategories-252fpromotions-252ehtml&d=DwMFAw&c=euGZstcaTDllvimEN8b7jXrwqOf-v5A_CdpgnVfiiMM&r=bvjPS2qChCtn3oJ7xOsN8J33nLXRv7_ze5VoMKB41p8&m=OjhacwgcItQ3nH2boUFTYGDJvGwH_K-3tmjWAyHL_-T42xjSvGZHqbpdgOb1UETZ&s=tqnw_6SxM8mBMl5Hgqo1SzC_AZ4a2AG3EIjTJRLxZAw&e=' },
   { label:'HR Portal',             sub:'Handbook',                icon:'👤', color:'purple', url:'https://drive.google.com/file/d/1sw_GEPSZrvx-kSSYisW_rcReYNWdDGPc/view' },
   { label:'Trade-In Intake',       sub:'Log a device trade-in',   icon:'📱', color:'red',    onclick:'openTradeIn()' },
-
+  { label:'Google Reviews',        sub:'QR Code Library',         icon:'⭐', color:'amber',  onclick:'openQRLibrary()' },
 ];
 
 const LINKS = [
@@ -1907,6 +1924,91 @@ function setDate() {
   document.getElementById('headerDate').textContent =
     new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();
 }
+// ── QR CODE LIBRARY ────────────────────────────────────────────────────────
+const QR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwS60OzHa8-mU4vnU00ZImOpgoffUVdogsX5VTFI4UpeCS0gNhfJd8UstvD2GMFvTf0AA/exec';
+let qrFiles = [];
+
+function openQRLibrary() {
+  const portal = document.getElementById('qr-library');
+  const tools  = document.getElementById('tools-grid');
+  const header = document.getElementById('tools-header');
+  if (!portal) return;
+  tools.style.display  = 'none';
+  if (header) header.style.display = 'none';
+  portal.style.display = 'block';
+  document.getElementById('qr-search').value = '';
+  if (qrFiles.length === 0) qrLoad();
+  else qrRender(qrFiles);
+}
+
+function closeQRLibrary() {
+  const portal = document.getElementById('qr-library');
+  const tools  = document.getElementById('tools-grid');
+  const header = document.getElementById('tools-header');
+  if (portal) portal.style.display = 'none';
+  if (tools)  tools.style.display  = '';
+  if (header) header.style.display = '';
+}
+
+async function qrLoad() {
+  const grid = document.getElementById('qr-grid');
+  grid.innerHTML = '<div class="qr-empty">Loading QR codes…</div>';
+  try {
+    const res  = await fetch(QR_SCRIPT_URL);
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.files.length) {
+      grid.innerHTML = '<div class="qr-empty">No QR codes found in the folder.</div>';
+      return;
+    }
+    qrFiles = data.files;
+    qrRender(qrFiles);
+  } catch(e) {
+    grid.innerHTML = `<div class="qr-empty">Failed to load QR codes.<br><small style="color:var(--muted);">${e.message}</small></div>`;
+  }
+}
+
+function qrRender(files) {
+  const grid = document.getElementById('qr-grid');
+  if (!files.length) {
+    grid.innerHTML = '<div class="qr-empty">No stores match your search.</div>';
+    return;
+  }
+  grid.innerHTML = files.map(f => `
+    <div class="qr-card" onclick="openQRLightbox('${f.id}','${f.name.replace(/'/g,"\'")}')">
+      <div class="qr-card-img-wrap">
+        <img src="https://drive.google.com/thumbnail?id=${f.id}&sz=w300"
+             loading="lazy" alt="${f.name}"
+             onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'/>'" />
+      </div>
+      <div class="qr-card-foot">${f.name}</div>
+    </div>`).join('');
+}
+
+function qrFilter(q) {
+  const filtered = q.trim()
+    ? qrFiles.filter(f => f.name.toLowerCase().includes(q.toLowerCase()))
+    : qrFiles;
+  qrRender(filtered);
+}
+
+function openQRLightbox(id, name) {
+  const lb = document.getElementById('qr-lightbox');
+  document.getElementById('qr-lb-name').textContent = name;
+  document.getElementById('qr-lb-img').src = `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+  const dlBtn = document.getElementById('qr-lb-dl');
+  dlBtn.href = `https://drive.google.com/uc?export=download&id=${id}`;
+  dlBtn.download = name + '.png';
+  lb.classList.add('open');
+  lb.style.display = 'flex';
+}
+
+function closeQRLightbox() {
+  const lb = document.getElementById('qr-lightbox');
+  lb.classList.remove('open');
+  lb.style.display = 'none';
+  document.getElementById('qr-lb-img').src = '';
+}
+
 function openBrinks() {
   const ua=navigator.userAgent||navigator.vendor||window.opera;
   const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
