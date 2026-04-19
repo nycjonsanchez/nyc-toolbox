@@ -1530,7 +1530,8 @@ const KPIS = [
   { name:'Pull Through', target:'Target: Per Activation', desc:'Accessories and add-ons sold per activation. Cases, chargers, screen protectors — direct gross profit.',                                                  tip:'Set a floor: every activation gets a case conversation. Use a physical product in hand during close.' },
 ];
 
-function copyStoreAddress(btn, address) {
+function copyStoreAddress(btn) {
+  const address = btn.dataset.address;
   navigator.clipboard.writeText(address).then(() => {
     const orig = btn.textContent;
     btn.textContent = '✓ Copied';
@@ -1562,7 +1563,7 @@ function renderStores(list) {
       <div class="store-actions">
         <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
         <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank">🗺 Map</a>
-        <button class="store-btn copy-addr-btn" onclick="copyStoreAddress(this, ${JSON.stringify(s.address||'')})">📋 Copy</button>
+        <button class="store-btn copy-addr-btn" data-address="${(s.address||'').replace(/"/g,'&quot;')}" onclick="copyStoreAddress(this)">📋 Copy</button>
       </div>
     </div>
   `;}).join('');
