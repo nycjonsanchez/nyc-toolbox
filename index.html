@@ -1563,7 +1563,7 @@ function renderStores(list) {
       <div class="store-actions">
         <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
         <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank">🗺 Map</a>
-        <button class="store-btn copy-addr-btn" data-address="${(s.address||'').replace(/"/g,'&quot;')}" onclick="copyStoreAddress(this)">📋 Copy</button>
+        <button class="store-btn copy-addr-btn" data-address="${(`${nm}${s['Store id']?' ('+s['Store id']+')':''}\n${s.address||''}`).replace(/"/g,'&quot;')}" onclick="copyStoreAddress(this)">📋 Copy</button>
       </div>
     </div>
   `;}).join('');
