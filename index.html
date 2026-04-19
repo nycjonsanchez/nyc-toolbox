@@ -1530,6 +1530,22 @@ const KPIS = [
   { name:'Pull Through', target:'Target: Per Activation', desc:'Accessories and add-ons sold per activation. Cases, chargers, screen protectors — direct gross profit.',                                                  tip:'Set a floor: every activation gets a case conversation. Use a physical product in hand during close.' },
 ];
 
+function copyStoreAddress(btn, address) {
+  navigator.clipboard.writeText(address).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.style.background = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 1500);
+  });
+}
+
 function renderStores(list) {
   document.getElementById('store-count').textContent = `${list.length} STORES`;
   document.getElementById('store-list').innerHTML = list.map(s => {
@@ -1546,6 +1562,7 @@ function renderStores(list) {
       <div class="store-actions">
         <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
         <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank">🗺 Map</a>
+        <button class="store-btn copy-addr-btn" onclick="copyStoreAddress(this, ${JSON.stringify(s.address||'')})">📋 Copy</button>
       </div>
     </div>
   `;}).join('');
