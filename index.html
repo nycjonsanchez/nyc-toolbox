@@ -857,7 +857,7 @@ html, body {
         <span class="sync-status-dot" id="syncDot"></span>
         <span class="sync-label" id="syncLabel">Not synced yet</span>
       </div>
-      <button class="refresh-btn" id="refreshBtn" onclick="fetchStores()">
+      <button class="refresh-btn" id="refreshBtn" onclick="fetchStores(true)">
         <span id="refreshIcon">↻</span> Refresh
       </button>
     </div>
@@ -1458,31 +1458,70 @@ function initApp() {
   switchTab('links');
 }
 
-async function fetchStores() {
+const STORE_CACHE_KEY = 'storeCache';
+const STORE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function loadStoreCache() {
+  try {
+    const raw = localStorage.getItem(STORE_CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > STORE_CACHE_TTL) return null;
+    return { data, ts };
+  } catch { return null; }
+}
+
+function saveStoreCache(data) {
+  try {
+    localStorage.setItem(STORE_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch {}
+}
+
+async function fetchStores(forceRefresh = false) {
   const btn   = document.getElementById('refreshBtn');
   const icon  = document.getElementById('refreshIcon');
   const dot   = document.getElementById('syncDot');
   const label = document.getElementById('syncLabel');
   const list  = document.getElementById('store-list');
 
+  // Show cached data instantly if available
+  const cached = loadStoreCache();
+  if (cached && !forceRefresh) {
+    storeData = cached.data;
+    renderStores(storeData);
+    dot.className = 'sync-status-dot ok';
+    const cachedTime = new Date(cached.ts);
+    label.textContent = `Cached ${cachedTime.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})} · refreshing…`;
+  }
+
   btn.disabled = true;
   icon.classList.add('spinning');
-  dot.className = 'sync-status-dot loading';
-  label.textContent = 'Syncing...';
+  if (!cached || forceRefresh) {
+    dot.className = 'sync-status-dot loading';
+    label.textContent = 'Syncing...';
+  }
 
   try {
     const res  = await fetch(SHEET_URL);
     const data = await res.json();
     storeData  = data.filter(s => s['name Non-WZ'] || s.name);
+    saveStoreCache(storeData);
     renderStores(storeData);
     dot.className = 'sync-status-dot ok';
     const now = new Date();
     label.textContent = `Synced ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
   } catch(e) {
-    dot.className = 'sync-status-dot err';
-    label.textContent = 'Sync failed — check URL';
-    list.innerHTML = `<div class="setup-banner"><strong>❌ Could not load stores</strong>Check your Apps Script URL and make sure the deployment is set to "Anyone can access."</div>`;
-    document.getElementById('store-count').textContent = '— STORES';
+    if (cached) {
+      // Keep showing cached data, just note the refresh failed
+      dot.className = 'sync-status-dot ok';
+      const cachedTime = new Date(cached.ts);
+      label.textContent = `Cached ${cachedTime.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})} · refresh failed`;
+    } else {
+      dot.className = 'sync-status-dot err';
+      label.textContent = 'Sync failed — check URL';
+      list.innerHTML = `<div class="setup-banner"><strong>❌ Could not load stores</strong>Check your Apps Script URL and make sure the deployment is set to "Anyone can access."</div>`;
+      document.getElementById('store-count').textContent = '— STORES';
+    }
   }
 
   icon.classList.remove('spinning');
@@ -1563,7 +1602,7 @@ function renderStores(list) {
       <div class="store-actions">
         <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
         <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank">🗺 Map</a>
-        <button class="store-btn copy-addr-btn" data-address="${(`${nm}${s['Store id']?' ('+s['Store id']+')':''}\n${s.address||''}`).replace(/"/g,'&quot;')}" onclick="copyStoreAddress(this)">📋 Copy</button>
+        <button class="store-btn copy-addr-btn" data-address="${(nm+(s['Store id']?' ('+s['Store id']+')':'')+' – '+(s.address||'')).replace(/"/g,'&quot;')}" onclick="copyStoreAddress(this)">📋 Copy</button>
       </div>
     </div>
   `;}).join('');
