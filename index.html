@@ -741,6 +741,123 @@ html, body {
 }
 #mp-lightbox img { max-width: 100%; max-height: 90vh; border-radius: 14px; }
 #mp-lightbox-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 28px; cursor: pointer; font-weight: 700; line-height: 1; }
+
+/* ── REQUESTS SECTION ── */
+.rq-page { display:none; padding:16px 20px 80px; max-width:640px; }
+.rq-page.active { display:block; }
+.rq-menu-back { padding:16px 20px 4px; }
+.rq-menu-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rq-menu-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 14px; cursor:pointer; transition:border-color .15s,box-shadow .15s; text-align:left; width:100%; font-family:'Inter',sans-serif; }
+.rq-menu-card:hover { border-color:var(--red); box-shadow:0 2px 12px rgba(205,4,11,.08); }
+.rq-mc-icon { font-size:1.5rem; margin-bottom:8px; display:block; }
+.rq-mc-label { font-size:12px; font-weight:700; color:var(--text); }
+.rq-mc-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+.rq-section-hd { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--red); margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.rq-form-title { font-size:17px; font-weight:900; color:var(--text); margin-bottom:2px; letter-spacing:-.3px; }
+.rq-form-sub { font-size:11px; color:var(--muted); margin-bottom:14px; }
+.rq-field { margin-bottom:13px; }
+.rq-field label { display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; font-weight:700; }
+.rq-field label .req { color:var(--red); margin-left:1px; }
+.rq-field input,.rq-field select,.rq-field textarea { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:14px; font-family:'Inter',sans-serif; transition:border-color .15s; appearance:none; outline:none; }
+.rq-field input:focus,.rq-field select:focus,.rq-field textarea:focus { border-color:var(--red); }
+.rq-field textarea { resize:vertical; min-height:76px; }
+.rq-field select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23767676' d='M5 6L0 0h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:30px; }
+.rq-frow { display:flex; gap:10px; }
+.rq-frow .rq-field { flex:1; }
+/* Radio tiles */
+.rq-radio-grid { display:grid; gap:7px; }
+.rq-radio-grid.col2 { grid-template-columns:1fr 1fr; }
+.rq-radio-grid.col3 { grid-template-columns:repeat(4,1fr); }
+.rq-radio-grid.col1 { grid-template-columns:1fr; }
+.rq-r-opt { display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; font-size:12px; font-weight:500; color:var(--text); transition:all .15s; user-select:none; font-family:'Inter',sans-serif; }
+.rq-r-opt:hover { border-color:var(--red); }
+.rq-r-opt input { display:none; }
+.rq-r-dot { width:15px; height:15px; border-radius:50%; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .15s; background:var(--bg); margin-left:auto; }
+.rq-r-opt.sel .rq-r-dot { border-color:var(--red); background:var(--red); }
+.rq-r-opt.sel .rq-r-dot::after { content:''; width:5px; height:5px; border-radius:50%; background:#fff; display:block; }
+.rq-r-opt.sel { border-color:var(--red); background:var(--red-dim); font-weight:700; border-left-width:3px; padding-left:10px; }
+/* Store search */
+.rq-store-wrap { position:relative; }
+.rq-store-drop { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; z-index:50; display:none; box-shadow:0 8px 24px rgba(0,0,0,.12); }
+.rq-store-drop.open { display:block; }
+.rq-s-item { padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--border); font-size:12px; }
+.rq-s-item:last-child { border-bottom:none; }
+.rq-s-item:hover { background:var(--surface); }
+.rq-s-item .sn { font-weight:700; color:var(--text); }
+.rq-s-item .sa { font-size:10px; color:var(--muted); }
+.rq-s-item .sid { font-size:10px; color:var(--red); }
+.rq-store-pill { background:var(--red-dim); border:1px solid rgba(205,4,11,.3); border-radius:8px; padding:8px 12px; margin-top:6px; font-size:12px; display:none; align-items:center; justify-content:space-between; gap:8px; }
+.rq-store-pill.visible { display:flex; }
+.rq-sp-name { color:var(--red); font-weight:700; }
+.rq-sp-addr { font-size:10px; color:var(--muted); }
+.rq-sp-clear { cursor:pointer; color:var(--red); font-size:10px; font-weight:700; flex-shrink:0; background:none; border:none; font-family:'Inter',sans-serif; }
+.rq-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.rq-chip { display:flex; align-items:center; gap:5px; background:var(--red-dim); border:1px solid rgba(205,4,11,.3); border-radius:20px; padding:4px 10px; font-size:11px; color:var(--text); }
+.rq-chip-x { cursor:pointer; color:var(--muted); font-size:13px; line-height:1; margin-left:2px; background:none; border:none; font-family:'Inter',sans-serif; }
+.rq-chip-x:hover { color:var(--red); }
+/* Buttons */
+.rq-btn-row { display:flex; gap:10px; margin-top:20px; }
+.rq-btn { padding:11px 20px; border-radius:8px; border:none; cursor:pointer; font-size:13px; font-weight:700; transition:opacity .15s; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-family:'Inter',sans-serif; }
+.rq-btn:hover { opacity:.85; }
+.rq-btn:disabled { opacity:.4; cursor:not-allowed; }
+.rq-btn-primary { background:var(--red); color:#fff; flex:1; }
+.rq-btn-ghost { background:var(--surface); border:1px solid var(--border); color:var(--text); }
+.rq-btn-ghost:hover { border-color:var(--red); color:var(--red); }
+/* Errors */
+.rq-err { color:var(--red); font-size:10px; margin-top:4px; display:none; }
+.rq-err.on { display:block; }
+.rq-global-err { background:rgba(205,4,11,.08); border:1px solid rgba(205,4,11,.25); border-radius:8px; padding:10px 13px; color:var(--red); font-size:11px; margin-top:12px; display:none; }
+.rq-global-err.on { display:block; }
+.rq-cond { display:none; }
+.rq-cond.on { display:block; }
+/* Spinner */
+.rq-spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+/* Success */
+.rq-success { text-align:center; padding:40px 20px; }
+.rq-success h2 { font-size:18px; font-weight:900; color:var(--red); margin-bottom:8px; }
+.rq-success p { color:var(--muted); font-size:12px; margin-bottom:24px; }
+
+/* ── ADMIN SUBMISSIONS TODO ── */
+.admin-tab-bar { display:flex; border-bottom:1px solid var(--border); background:var(--surface); }
+.admin-tab { padding:10px 16px; font-size:12px; font-weight:700; cursor:pointer; border-bottom:2px solid transparent; color:var(--muted); background:none; border-top:none; border-left:none; border-right:none; font-family:'Inter',sans-serif; transition:color .15s; }
+.admin-tab.active { color:var(--red); border-bottom-color:var(--red); }
+.admin-tab-panel { display:none; }
+.admin-tab-panel.active { display:block; }
+.todo-item { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); transition:background .15s; }
+.todo-item:last-child { border-bottom:none; }
+.todo-item.done { opacity:.55; }
+.todo-item.done .todo-title { text-decoration:line-through; }
+.todo-cb { width:18px; height:18px; border:2px solid var(--border2); border-radius:4px; cursor:pointer; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; transition:all .15s; background:var(--bg); }
+.todo-item.done .todo-cb { background:var(--red); border-color:var(--red); }
+.todo-cb::after { content:''; }
+.todo-item.done .todo-cb::after { content:'✓'; font-size:10px; color:#fff; font-weight:800; }
+.todo-body { flex:1; min-width:0; }
+.todo-title { font-size:13px; font-weight:700; color:var(--text); }
+.todo-meta { font-size:11px; color:var(--muted); margin-top:3px; display:flex; flex-wrap:wrap; gap:6px; }
+.todo-type-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.todo-type-shirt    { background:#e0f2fe; color:#0369a1; }
+.todo-type-badge_req { background:#f3e8ff; color:#7c3aed; }
+.todo-type-bizcard  { background:#fef9c3; color:#854d0e; }
+.todo-type-shipping { background:#fef3c7; color:#92400e; }
+.todo-type-supplies { background:#dcfce7; color:#166534; }
+.todo-type-brinks   { background:#fff0f0; color:#cd040b; }
+.todo-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--surface); }
+.todo-filter-chip { padding:4px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card); font-size:11px; font-weight:700; cursor:pointer; color:var(--muted); font-family:'Inter',sans-serif; transition:all .15s; }
+.todo-filter-chip.active { background:var(--red); color:#fff; border-color:var(--red); }
+.todo-setup-note { background:#fff8e1; border:1px solid #fbbf24; border-radius:10px; padding:14px 16px; margin:16px; font-size:12px; color:#92400e; line-height:1.6; }
+.todo-setup-note code { background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px; }
+
+@media(min-width:768px){
+  .rq-menu-grid { grid-template-columns:repeat(3,1fr); }
+  .rq-radio-grid.col3 { grid-template-columns:repeat(8,1fr); }
+  .rq-radio-grid.col1 { grid-template-columns:1fr 1fr; }
+  .rq-page { padding:20px 28px 60px; }
+  .rq-menu-back { padding:20px 28px 4px; }
+}
+@media(max-width:767px){
+  .rq-field input,.rq-field select,.rq-field textarea { font-size:16px; padding:12px 13px; }
+  .rq-radio-grid.col3 { grid-template-columns:repeat(4,1fr); }
+}
 </style>
 </head>
 <body>
@@ -836,6 +953,9 @@ html, body {
   </div>
   <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
     <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
+  </div>
+  <div class="sidebar-item" id="snav-requests" onclick="switchTab('requests')">
+    <span class="sidebar-icon">📋</span><span class="sidebar-label">Employee Requests</span>
   </div>
   <div class="sidebar-item" id="snav-manager" onclick="switchTab('manager');mpLoad()">
     <span class="sidebar-icon">🔍</span><span class="sidebar-label">Verification Portal</span>
@@ -1053,21 +1173,331 @@ html, body {
 
   </div>
 
+  <!-- ── REQUESTS SECTION ── -->
+  <div id="section-requests" class="section">
+
+    <!-- Menu -->
+    <div class="rq-page active" id="rq-menu">
+      <div class="section-header"><div class="section-title">Employee Requests</div></div>
+      <div style="font-size:12px;color:var(--muted);padding:0 0 14px;">Select a request type to get started.</div>
+      <div class="rq-menu-grid">
+        <button class="rq-menu-card" onclick="rqShow('shirt')"><span class="rq-mc-icon">👕</span><div class="rq-mc-label">Apparel Request</div><div class="rq-mc-sub">Shirts &amp; sweaters</div></button>
+        <button class="rq-menu-card" onclick="rqShow('badge')"><span class="rq-mc-icon">🪪</span><div class="rq-mc-label">ID Badge</div><div class="rq-mc-sub">Employee ID badge</div></button>
+        <button class="rq-menu-card" onclick="rqShow('bizcard')"><span class="rq-mc-icon">💼</span><div class="rq-mc-label">Business Cards</div><div class="rq-mc-sub">Personal or store cards</div></button>
+        <button class="rq-menu-card" onclick="rqShow('shipping')"><span class="rq-mc-icon">📦</span><div class="rq-mc-label">Shipping Label</div><div class="rq-mc-sub">Request a shipping label</div></button>
+        <button class="rq-menu-card" onclick="rqShow('supplies')"><span class="rq-mc-icon">🛒</span><div class="rq-mc-label">Store Supplies Order</div><div class="rq-mc-sub">Cases, glass &amp; accessories</div></button>
+        <button class="rq-menu-card" onclick="rqShow('brinks')"><span class="rq-mc-icon">🔐</span><div class="rq-mc-label">Brinks Login</div><div class="rq-mc-sub">Request Brinks account access</div></button>
+      </div>
+    </div>
+
+    <!-- Shirt Form -->
+    <div class="rq-page" id="rq-shirt">
+      <div class="rq-menu-back"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button></div>
+      <div style="padding:0 0 0 20px;" class="rq-form-title">Apparel Request</div>
+      <div style="padding:0 0 0 20px;" class="rq-form-sub">Order shirts &amp; sweaters. Required fields marked <span style="color:var(--red)">*</span></div>
+      <div style="padding:0 20px;">
+        <div class="rq-section-hd">Employee Info</div>
+        <div class="rq-field"><label>Full Name <span class="req">*</span></label><input type="text" id="rs-name" placeholder="First Last"/><div class="rq-err" id="rs-name-e">Please enter your name.</div></div>
+        <div class="rq-field"><label>Email Address</label><input type="email" id="rs-email" placeholder="you@wirelesszone.com"/></div>
+        <div class="rq-section-hd">Store Location</div>
+        <div class="rq-field"><label>Store <span class="req">*</span></label>
+          <div class="rq-store-wrap"><input type="text" id="rs-store-q" placeholder="Search store name or ID…" autocomplete="off" oninput="rqFilter('rs')" onfocus="rqOpenDrop('rs')"/><div class="rq-store-drop" id="rs-drop"></div></div>
+          <div class="rq-store-pill" id="rs-pill"><div><div class="rq-sp-name" id="rs-pill-name"></div><div class="rq-sp-addr" id="rs-pill-addr"></div></div><button class="rq-sp-clear" onclick="rqClear('rs')">✕ Clear</button></div>
+          <div class="rq-err" id="rs-store-e">Please select a store.</div>
+        </div>
+        <div class="rq-section-hd">Sizes</div>
+        <div class="rq-field"><label>Shirt Size <span class="req">*</span></label>
+          <div class="rq-radio-grid col3">
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="XS"/><span class="rq-r-dot"></span>XS</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="S"/><span class="rq-r-dot"></span>S</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="M"/><span class="rq-r-dot"></span>M</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="L"/><span class="rq-r-dot"></span>L</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="XL"/><span class="rq-r-dot"></span>XL</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="XXL"/><span class="rq-r-dot"></span>XXL</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="3XL"/><span class="rq-r-dot"></span>3XL</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-shirt')"><input type="radio" name="rs-shirt" value="4XL"/><span class="rq-r-dot"></span>4XL</label>
+          </div>
+          <div class="rq-err" id="rs-shirt-e">Please select a shirt size.</div>
+        </div>
+        <div class="rq-field"><label>Sweater Size <span class="req">*</span></label>
+          <div class="rq-radio-grid col3">
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="XS"/><span class="rq-r-dot"></span>XS</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="S"/><span class="rq-r-dot"></span>S</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="M"/><span class="rq-r-dot"></span>M</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="L"/><span class="rq-r-dot"></span>L</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="XL"/><span class="rq-r-dot"></span>XL</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="XXL"/><span class="rq-r-dot"></span>XXL</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="3XL"/><span class="rq-r-dot"></span>3XL</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rs-sw')"><input type="radio" name="rs-sw" value="4XL"/><span class="rq-r-dot"></span>4XL</label>
+          </div>
+          <div class="rq-err" id="rs-sw-e">Please select a sweater size.</div>
+        </div>
+        <div class="rq-field"><label>Comments</label><textarea id="rs-comments" placeholder="Any additional notes…"></textarea></div>
+        <div class="rq-global-err" id="rs-gerr"></div>
+        <div class="rq-btn-row"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button><button class="rq-btn rq-btn-primary" id="rs-btn" onclick="rqSubmitShirt()">Submit Request</button></div>
+      </div>
+    </div>
+
+    <!-- Badge Form -->
+    <div class="rq-page" id="rq-badge">
+      <div class="rq-menu-back"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button></div>
+      <div style="padding:0 20px;">
+        <div class="rq-form-title">ID Badge Request</div>
+        <div class="rq-form-sub">Required fields marked <span style="color:var(--red)">*</span></div>
+        <div class="rq-section-hd">Employee Info</div>
+        <div class="rq-field"><label>Full Legal Name <span class="req">*</span></label><input type="text" id="rb-name" placeholder="First Last"/><div class="rq-err" id="rb-name-e">Please enter your name.</div></div>
+        <div class="rq-field"><label>Email Address</label><input type="email" id="rb-email" placeholder="you@wirelesszone.com"/></div>
+        <div class="rq-field"><label>Preferred Name <span style="color:var(--muted);text-transform:none;font-size:9px;">(printed on badge)</span> <span class="req">*</span></label>
+          <input type="text" id="rb-preferred" placeholder="Name as it should appear"/><div class="rq-err" id="rb-pref-e">Please enter the preferred badge name.</div>
+        </div>
+        <div class="rq-section-hd">Store Location</div>
+        <div class="rq-field"><label>Store <span class="req">*</span></label>
+          <div class="rq-store-wrap"><input type="text" id="rb-store-q" placeholder="Search store…" autocomplete="off" oninput="rqFilter('rb')" onfocus="rqOpenDrop('rb')"/><div class="rq-store-drop" id="rb-drop"></div></div>
+          <div class="rq-store-pill" id="rb-pill"><div><div class="rq-sp-name" id="rb-pill-name"></div><div class="rq-sp-addr" id="rb-pill-addr"></div></div><button class="rq-sp-clear" onclick="rqClear('rb')">✕ Clear</button></div>
+          <div class="rq-err" id="rb-store-e">Please select a store.</div>
+        </div>
+        <div class="rq-section-hd">Badge Details</div>
+        <div class="rq-field"><label>Role / Job Title <span class="req">*</span></label>
+          <div class="rq-radio-grid col1">
+            <label class="rq-r-opt" onclick="rqSel(this,'rb-role');rqHideOther('rb-role-other')"><input type="radio" name="rb-role" value="Sales Associate"/><span class="rq-r-dot"></span>Sales Associate</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rb-role');rqHideOther('rb-role-other')"><input type="radio" name="rb-role" value="Sales Specialist"/><span class="rq-r-dot"></span>Sales Specialist</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rb-role');rqHideOther('rb-role-other')"><input type="radio" name="rb-role" value="Assistant Manager"/><span class="rq-r-dot"></span>Assistant Manager</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rb-role');rqHideOther('rb-role-other')"><input type="radio" name="rb-role" value="Store Manager"/><span class="rq-r-dot"></span>Store Manager</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rb-role');rqHideOther('rb-role-other')"><input type="radio" name="rb-role" value="District Manager"/><span class="rq-r-dot"></span>District Manager</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rb-role');rqShowOther('rb-role-other')"><input type="radio" name="rb-role" value="Other"/><span class="rq-r-dot"></span>Other</label>
+          </div>
+          <div class="rq-cond rq-field" id="rb-role-other" style="margin-top:8px;"><input type="text" id="rb-role-custom" placeholder="Enter title…"/></div>
+          <div class="rq-err" id="rb-role-e">Please select a role.</div>
+        </div>
+        <div class="rq-field"><label>Additional Info <span style="color:var(--muted);text-transform:none;font-size:9px;">(optional)</span></label>
+          <textarea id="rb-info" placeholder="e.g. Speaks Spanish, Bilingual, Tech Specialist…"></textarea>
+        </div>
+        <div class="rq-global-err" id="rb-gerr"></div>
+        <div class="rq-btn-row"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button><button class="rq-btn rq-btn-primary" id="rb-btn" onclick="rqSubmitBadge()">Submit Request</button></div>
+      </div>
+    </div>
+
+    <!-- Business Cards Form -->
+    <div class="rq-page" id="rq-bizcard">
+      <div class="rq-menu-back"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button></div>
+      <div style="padding:0 20px;">
+        <div class="rq-form-title">Business Card Request</div>
+        <div class="rq-form-sub">Required fields marked <span style="color:var(--red)">*</span></div>
+        <div class="rq-section-hd">Card Type</div>
+        <div class="rq-field"><label>Order type <span class="req">*</span></label>
+          <div class="rq-radio-grid col2">
+            <label class="rq-r-opt" onclick="rqSel(this,'rbc-type');rqTogglePersonal(true)"><input type="radio" name="rbc-type" value="Personal Cards"/><span class="rq-r-dot"></span>Personal Cards</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rbc-type');rqTogglePersonal(false)"><input type="radio" name="rbc-type" value="Store Cards"/><span class="rq-r-dot"></span>Store Cards</label>
+          </div>
+          <div class="rq-err" id="rbc-type-e">Please select a card type.</div>
+        </div>
+        <div class="rq-cond" id="rbc-personal-sec">
+          <div class="rq-section-hd">Personal Card Info</div>
+          <div class="rq-field"><label>Full Name <span class="req">*</span></label><input type="text" id="rbc-name" placeholder="First Last"/><div class="rq-err" id="rbc-name-e">Please enter your full name.</div></div>
+          <div class="rq-field"><label>Job Title</label>
+            <div class="rq-radio-grid col1">
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqHideOther('rbc-title-other')"><input type="radio" name="rbc-title" value="Sales Associate"/><span class="rq-r-dot"></span>Sales Associate</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqHideOther('rbc-title-other')"><input type="radio" name="rbc-title" value="Sales Specialist"/><span class="rq-r-dot"></span>Sales Specialist</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqHideOther('rbc-title-other')"><input type="radio" name="rbc-title" value="Assistant Manager"/><span class="rq-r-dot"></span>Assistant Manager</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqHideOther('rbc-title-other')"><input type="radio" name="rbc-title" value="Store Manager"/><span class="rq-r-dot"></span>Store Manager</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqHideOther('rbc-title-other')"><input type="radio" name="rbc-title" value="District Manager"/><span class="rq-r-dot"></span>District Manager</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqHideOther('rbc-title-other')"><input type="radio" name="rbc-title" value="Do Not Include Title"/><span class="rq-r-dot"></span>Do Not Include Title</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-title');rqShowOther('rbc-title-other')"><input type="radio" name="rbc-title" value="Other"/><span class="rq-r-dot"></span>Other</label>
+            </div>
+            <div class="rq-cond rq-field" id="rbc-title-other" style="margin-top:8px;"><input type="text" id="rbc-title-custom" placeholder="Enter title…"/></div>
+          </div>
+          <div class="rq-field"><label>Phone Numbers on Card <span class="req">*</span></label>
+            <div class="rq-radio-grid col1">
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-ph');rqShowCell(false)"><input type="radio" name="rbc-ph" value="Store # Only"/><span class="rq-r-dot"></span>Store # Only</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-ph');rqShowCell(true)"><input type="radio" name="rbc-ph" value="Cell # Only"/><span class="rq-r-dot"></span>Cell # Only</label>
+              <label class="rq-r-opt" onclick="rqSel(this,'rbc-ph');rqShowCell(true)"><input type="radio" name="rbc-ph" value="Both Cell &amp; Store #"/><span class="rq-r-dot"></span>Both Cell &amp; Store #</label>
+            </div>
+            <div class="rq-err" id="rbc-ph-e">Please select a phone option.</div>
+          </div>
+          <div class="rq-cond rq-field" id="rbc-cell-fg"><label>Cell Phone Number</label><input type="tel" id="rbc-cell" placeholder="(555) 555-5555"/></div>
+          <div class="rq-field"><label>Email on Card</label>
+            <select id="rbc-email-sel" onchange="rqToggleWzEmail(this.value)">
+              <option value="">— Select or leave blank —</option>
+              <option value="WZ Email Address">Use WZ Email Address</option>
+              <option value="Personal Email">Use Personal Email</option>
+              <option value="No Email">Do Not Include Email</option>
+            </select>
+          </div>
+          <div class="rq-cond rq-field" id="rbc-wz-email-fg">
+            <label>WZ Email Address <span class="req">*</span></label>
+            <input type="email" id="rbc-wz-email" placeholder="firstname.lastname@wirelesszone.com"/>
+            <div class="rq-err" id="rbc-wz-email-e">Please enter your WZ email.</div>
+          </div>
+        </div>
+        <div class="rq-section-hd">Store Location</div>
+        <div class="rq-field">
+          <div class="rq-radio-grid col2" style="margin-bottom:10px;">
+            <label class="rq-r-opt" onclick="rqSel(this,'rbc-store-opt');rqToggleBcStore(true)"><input type="radio" name="rbc-store-opt" value="yes"/><span class="rq-r-dot"></span>Select a Store</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rbc-store-opt');rqToggleBcStore(false)"><input type="radio" name="rbc-store-opt" value="none"/><span class="rq-r-dot"></span>None</label>
+          </div>
+          <div class="rq-cond" id="rbc-store-search-wrap">
+            <div class="rq-store-wrap"><input type="text" id="rbc-store-q" placeholder="Search store…" autocomplete="off" oninput="rqFilter('rbc')" onfocus="rqOpenDrop('rbc')"/><div class="rq-store-drop" id="rbc-drop"></div></div>
+            <div class="rq-store-pill" id="rbc-pill"><div><div class="rq-sp-name" id="rbc-pill-name"></div><div class="rq-sp-addr" id="rbc-pill-addr"></div></div><button class="rq-sp-clear" onclick="rqClear('rbc')">✕ Clear</button></div>
+            <div class="rq-err" id="rbc-store-e">Please select a store.</div>
+          </div>
+        </div>
+        <div class="rq-global-err" id="rbc-gerr"></div>
+        <div class="rq-btn-row"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button><button class="rq-btn rq-btn-primary" id="rbc-btn" onclick="rqSubmitBizcard()">Submit Request</button></div>
+      </div>
+    </div>
+
+    <!-- Shipping Form -->
+    <div class="rq-page" id="rq-shipping">
+      <div class="rq-menu-back"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button></div>
+      <div style="padding:0 20px;">
+        <div class="rq-form-title">Shipping Label Request</div>
+        <div class="rq-form-sub">Required fields marked <span style="color:var(--red)">*</span></div>
+        <div class="rq-section-hd">Origin Store</div>
+        <div class="rq-field"><label>Store Location <span class="req">*</span></label>
+          <div class="rq-store-wrap"><input type="text" id="rsh-store-q" placeholder="Search store…" autocomplete="off" oninput="rqFilter('rsh')" onfocus="rqOpenDrop('rsh')"/><div class="rq-store-drop" id="rsh-drop"></div></div>
+          <div class="rq-store-pill" id="rsh-pill"><div><div class="rq-sp-name" id="rsh-pill-name"></div><div class="rq-sp-addr" id="rsh-pill-addr"></div></div><button class="rq-sp-clear" onclick="rqClear('rsh')">✕ Clear</button></div>
+          <div class="rq-err" id="rsh-store-e">Please select a store.</div>
+        </div>
+        <div class="rq-field"><label>Email (where label will be sent) <span class="req">*</span></label><input type="email" id="rsh-label-email" placeholder="label@wirelesszone.com"/><div class="rq-err" id="rsh-email-e">Please enter the label email.</div></div>
+        <div class="rq-section-hd">Recipient Info</div>
+        <div class="rq-field"><label>Customer / Business Name <span class="req">*</span></label><input type="text" id="rsh-cust-name" placeholder="Full name or business name"/><div class="rq-err" id="rsh-cust-e">Please enter a name.</div></div>
+        <div class="rq-field"><label>Attention To</label><input type="text" id="rsh-attn" placeholder="Person or department (optional)"/></div>
+        <div class="rq-field"><label>Address Line 1 <span class="req">*</span></label><input type="text" id="rsh-addr1" placeholder="123 Main St"/><div class="rq-err" id="rsh-addr-e">Please enter the street address.</div></div>
+        <div class="rq-field"><label>Address Line 2</label><input type="text" id="rsh-addr2" placeholder="Apt, Suite, Floor (optional)"/></div>
+        <div class="rq-frow">
+          <div class="rq-field" style="flex:2"><label>City <span class="req">*</span></label><input type="text" id="rsh-city" placeholder="City"/><div class="rq-err" id="rsh-city-e">Required.</div></div>
+          <div class="rq-field"><label>State <span class="req">*</span></label><input type="text" id="rsh-state" placeholder="NY" maxlength="2"/><div class="rq-err" id="rsh-state-e">Required.</div></div>
+          <div class="rq-field"><label>ZIP <span class="req">*</span></label><input type="text" id="rsh-zip" placeholder="10001" maxlength="10"/><div class="rq-err" id="rsh-zip-e">Required.</div></div>
+        </div>
+        <div class="rq-frow">
+          <div class="rq-field"><label>Customer Phone <span class="req">*</span></label><input type="tel" id="rsh-phone" placeholder="(555) 555-5555"/><div class="rq-err" id="rsh-phone-e">Required.</div></div>
+          <div class="rq-field"><label>Customer Email</label><input type="email" id="rsh-cust-email" placeholder="customer@email.com"/></div>
+        </div>
+        <div class="rq-section-hd">Shipment Details</div>
+        <div class="rq-field"><label>Signature Required <span class="req">*</span></label>
+          <div class="rq-radio-grid col2">
+            <label class="rq-r-opt" onclick="rqSel(this,'rsh-sig')"><input type="radio" name="rsh-sig" value="Yes"/><span class="rq-r-dot"></span>Yes</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rsh-sig')"><input type="radio" name="rsh-sig" value="No"/><span class="rq-r-dot"></span>No</label>
+          </div>
+          <div class="rq-err" id="rsh-sig-e">Please select signature requirement.</div>
+        </div>
+        <div class="rq-field"><label>Items Being Sent <span class="req">*</span></label><textarea id="rsh-items" placeholder="e.g. iPhone 16 x2, iPad x1…"></textarea><div class="rq-err" id="rsh-items-e">Please list the items.</div></div>
+        <div class="rq-field"><label>Total Shipment Value <span class="req">*</span></label><input type="text" id="rsh-value" placeholder="e.g. $450.00"/><div class="rq-err" id="rsh-value-e">Please enter the value.</div></div>
+        <div class="rq-field"><label>Comments / Special Requests</label><textarea id="rsh-comments" placeholder="Any additional instructions… (optional)"></textarea></div>
+        <div class="rq-global-err" id="rsh-gerr"></div>
+        <div class="rq-btn-row"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button><button class="rq-btn rq-btn-primary" id="rsh-btn" onclick="rqSubmitShipping()">Submit Request</button></div>
+      </div>
+    </div>
+
+    <!-- Supplies Form -->
+    <div class="rq-page" id="rq-supplies">
+      <div class="rq-menu-back"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button></div>
+      <div style="padding:0 20px;">
+        <div class="rq-form-title">Store Supplies Order</div>
+        <div class="rq-form-sub">Cases, tempered glass &amp; accessories. <strong style="color:var(--red)">No phone inventory.</strong></div>
+        <div class="rq-section-hd">Employee</div>
+        <div class="rq-field"><label>Employee Name <span class="req">*</span></label><input type="text" id="rsp-name" placeholder="Your full name"/><div class="rq-err" id="rsp-name-e">Please enter your name.</div></div>
+        <div class="rq-section-hd">Store Location</div>
+        <div class="rq-field"><label>Location <span class="req">*</span></label>
+          <div class="rq-store-wrap"><input type="text" id="rsp-store-q" placeholder="Search store…" autocomplete="off" oninput="rqFilter('rsp')" onfocus="rqOpenDrop('rsp')"/><div class="rq-store-drop" id="rsp-drop"></div></div>
+          <div class="rq-store-pill" id="rsp-pill"><div><div class="rq-sp-name" id="rsp-pill-name"></div><div class="rq-sp-addr" id="rsp-pill-addr"></div></div><button class="rq-sp-clear" onclick="rqClear('rsp')">✕ Clear</button></div>
+          <div class="rq-err" id="rsp-store-e">Please select a store.</div>
+        </div>
+        <div class="rq-section-hd">Order Details</div>
+        <div class="rq-field"><label>Order <span style="color:var(--muted);text-transform:none;font-size:9px;">(list items &amp; quantities)</span></label><textarea id="rsp-order" placeholder="e.g. iPhone 15 cases x10, Screen protectors x20…"></textarea></div>
+        <div class="rq-field"><label>Amazon Orders with Link <span style="color:var(--muted);text-transform:none;font-size:9px;">(optional)</span></label><textarea id="rsp-amazon" placeholder="Paste Amazon product links and quantities…" style="min-height:60px"></textarea></div>
+        <div class="rq-field"><label>Priority <span class="req">*</span></label>
+          <div class="rq-radio-grid col2">
+            <label class="rq-r-opt" onclick="rqSel(this,'rsp-pri')"><input type="radio" name="rsp-pri" value="Standard"/><span class="rq-r-dot"></span>Standard</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rsp-pri')"><input type="radio" name="rsp-pri" value="High"/><span class="rq-r-dot"></span>High</label>
+          </div>
+          <div class="rq-err" id="rsp-pri-e">Please select a priority.</div>
+        </div>
+        <div class="rq-global-err" id="rsp-gerr"></div>
+        <div class="rq-btn-row"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button><button class="rq-btn rq-btn-primary" id="rsp-btn" onclick="rqSubmitSupplies()">Submit Request</button></div>
+      </div>
+    </div>
+
+    <!-- Brinks Form -->
+    <div class="rq-page" id="rq-brinks">
+      <div class="rq-menu-back"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button></div>
+      <div style="padding:0 20px;">
+        <div class="rq-form-title">Brinks Login Request</div>
+        <div class="rq-form-sub">Request Brinks account access. Required fields marked <span style="color:var(--red)">*</span></div>
+        <div class="rq-section-hd">Request Type</div>
+        <div class="rq-field">
+          <div class="rq-radio-grid col2">
+            <label class="rq-r-opt" onclick="rqSel(this,'rbr-req-type')"><input type="radio" name="rbr-req-type" value="New Login"/><span class="rq-r-dot"></span>New Login</label>
+            <label class="rq-r-opt" onclick="rqSel(this,'rbr-req-type')"><input type="radio" name="rbr-req-type" value="Adding Locations"/><span class="rq-r-dot"></span>Adding Locations</label>
+          </div>
+          <div class="rq-err" id="rbr-req-type-e">Please select a request type.</div>
+        </div>
+        <div class="rq-section-hd">Employee Info</div>
+        <div class="rq-frow">
+          <div class="rq-field"><label>First Name <span class="req">*</span></label><input type="text" id="rbr-first" placeholder="First"/><div class="rq-err" id="rbr-first-e">Required.</div></div>
+          <div class="rq-field"><label>Last Name <span class="req">*</span></label><input type="text" id="rbr-last" placeholder="Last"/><div class="rq-err" id="rbr-last-e">Required.</div></div>
+        </div>
+        <div class="rq-field"><label>WZ Email Address <span class="req">*</span></label><input type="email" id="rbr-email" placeholder="you@wirelesszone.com"/><div class="rq-err" id="rbr-email-e">Required.</div></div>
+        <div class="rq-field"><label>Phone Number <span class="req">*</span></label><input type="tel" id="rbr-phone" placeholder="(555) 555-5555"/><div class="rq-err" id="rbr-phone-e">Required.</div></div>
+        <div class="rq-section-hd">Store Location(s)</div>
+        <div class="rq-field"><label>Stores <span class="req">*</span></label>
+          <div class="rq-store-wrap"><input type="text" id="rbr-store-q" placeholder="Search and add stores…" autocomplete="off" oninput="rqBrFilterStores()" onfocus="rqBrFilterStores()"/><div class="rq-store-drop" id="rbr-drop"></div></div>
+          <div class="rq-chips" id="rbr-chips"></div>
+          <div class="rq-err" id="rbr-store-e">Please select at least one store.</div>
+        </div>
+        <div class="rq-global-err" id="rbr-gerr"></div>
+        <div class="rq-btn-row"><button class="rq-btn rq-btn-ghost" onclick="rqMenu()">← Back</button><button class="rq-btn rq-btn-primary" id="rbr-btn" onclick="rqSubmitBrinks()">Submit Request</button></div>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div class="rq-page" id="rq-success">
+      <div class="rq-success">
+        <div style="font-size:3rem;margin-bottom:14px;">✅</div>
+        <h2 id="rq-suc-title">Request Submitted!</h2>
+        <p id="rq-suc-msg">Your request has been received and will be processed shortly.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="rq-btn rq-btn-primary" onclick="rqMenu()">Submit Another</button>
+          <button class="rq-btn rq-btn-ghost" onclick="switchTab('links')">Back to Home</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ── ADMIN SECTION ── -->
   <div id="section-admin" class="section">
     <div class="admin-section">
       <div class="admin-section-title">Admin Panel</div>
-      <div class="admin-section-sub">Manage user roles across your organization</div>
-      <div class="admin-toolbar">
-        <button class="admin-refresh-btn" onclick="adminLoad()">↻ Refresh</button>
+      <div class="admin-section-sub">Manage users and process employee requests</div>
+
+      <!-- Tab bar -->
+      <div class="admin-tab-bar">
+        <button class="admin-tab active" id="atab-users" onclick="adminSwitchTab('users')">👤 Users</button>
+        <button class="admin-tab" id="atab-submissions" onclick="adminSwitchTab('submissions')">📋 Submissions</button>
       </div>
-      <div class="admin-card" id="admin-root">
-        <div class="admin-loading">Loading users…</div>
+
+      <!-- Users tab -->
+      <div class="admin-tab-panel active" id="apanel-users">
+        <div class="admin-toolbar" style="padding:14px 0 0;">
+          <button class="admin-refresh-btn" onclick="adminLoad()">↻ Refresh</button>
+        </div>
+        <div class="admin-card" id="admin-root">
+          <div class="admin-loading">Loading users…</div>
+        </div>
+        <div id="admin-float-bar" style="display:none;">
+          <div id="save-all-status"></div>
+          <button class="admin-float-save" id="save-all-btn" onclick="adminSaveAll()">Save Changes</button>
+        </div>
       </div>
-      <div id="admin-float-bar" style="display:none;">
-        <div id="save-all-status"></div>
-        <button class="admin-float-save" id="save-all-btn" onclick="adminSaveAll()">Save Changes</button>
+
+      <!-- Submissions tab -->
+      <div class="admin-tab-panel" id="apanel-submissions">
+        <div id="todo-root" style="margin-top:14px;">
+          <div class="admin-loading">Loading submissions…</div>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -1089,6 +1519,9 @@ html, body {
     </div>
     <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
       <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
+    </div>
+    <div class="drawer-item" id="dmenu-requests" onclick="switchTab('requests')">
+      <span class="drawer-icon">📋</span><span class="drawer-label">Employee Requests</span><span class="drawer-arrow">›</span>
     </div>
     <div class="drawer-item" id="dmenu-manager" onclick="switchTab('manager');mpLoad()">
       <span class="drawer-icon">🔍</span><span class="drawer-label">Verification Portal</span><span class="drawer-arrow">›</span>
@@ -1549,8 +1982,7 @@ const TOOLS = [
 
 const LINKS = [
   { label:'Power BI',       sub:'Evolve 5',           icon:'📊', color:'blue',   url:'https://app.powerbi.com/groups/e6f168ee-146a-4acb-85e9-41ca851e5b56/reports/ef164d65-109a-4fe6-9147-bc48a7a9a24f?ctid=e9406363-68fe-415c-9ecb-6f18a3ccf590&pbi_source=linkShare' },
-  { label:'Store Supplies', sub:'Order Form',          icon:'🛒', color:'blue',   url:'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=Y2NA6f5oXEGey28Yo8z1kFzhRtscrOFNswQy1AvZejdUMVBPRlpBUjZUNTVCQkM3SFpJRjVYRVhLQi4u' },
-  { label:'UPS Label',      sub:'Label Request Form',  icon:'📦', color:'amber',  url:'https://forms.office.com/r/2dj7rpmUqv' },
+  { label:'Employee Requests', sub:'Apparel, Badge, Shipping &amp; more', icon:'📋', color:'red', onclick:"switchTab('requests')" },
   { label:'Payroll',        sub:'ADP Workforce',       icon:'💰', color:'green',  url:'https://online.adp.com/signin/v1/?APPID=RUN&productId=80e309c3-70c3-bae1-e053-3505430b5495&Action=Login&Stc=False&ssru=branded' },
   { label:'Training Hub',   sub:'Workday',             icon:'🎓', color:'teal',   url:'https://wd12.myworkday.com/verizon/learning' },
   { label:'IT Support',     sub:'SPOC',                icon:'🛠️', color:'blue',   url:'https://tccinc.service-now.com/sp' },
@@ -2475,6 +2907,445 @@ function mpSetTab(tab)         { mpState.tab = tab; mpState.selected = null; mpR
 function mpSetQueueStatus(v)   { mpState.queueStatus = v; mpRender(); }
 function mpSetArchStatus(v)    { mpState.archStatus  = v; mpRender(); }
 function mpSetArchSearch(v)    { mpState.archSearch  = v; mpRender(); }
+
+// ── Manager Portal ready ──────────────────────────────────────────────────────
+
+// ════════════════════════════════════════════════════════
+//  EMPLOYEE REQUESTS PORTAL
+// ════════════════════════════════════════════════════════
+const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbx4HSoekacYrwBz_rPnwm3fd0vyKcqKhRdDYjlHyzQZbVU3_w1XEgU3SkH1B464NF93pw/exec';
+
+// Per-form selected store state
+const rqSelStore = { rs:null, rb:null, rbc:null, rsh:null, rsp:null };
+let rqBrStores = [];
+
+// ── Page navigation ──────────────────────────────────────
+function rqMenu() {
+  document.querySelectorAll('.rq-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('rq-menu').classList.add('active');
+  const c = document.querySelector('.content'); if(c) c.scrollTop = 0; else window.scrollTo(0,0);
+}
+function rqShow(form) {
+  rqReset(form);
+  document.querySelectorAll('.rq-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('rq-' + form).classList.add('active');
+  const c = document.querySelector('.content'); if(c) c.scrollTop = 0; else window.scrollTo(0,0);
+}
+function rqSuc(title, msg) {
+  document.getElementById('rq-suc-title').textContent = title;
+  document.getElementById('rq-suc-msg').textContent = msg;
+  document.querySelectorAll('.rq-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('rq-success').classList.add('active');
+  const c = document.querySelector('.content'); if(c) c.scrollTop = 0; else window.scrollTo(0,0);
+}
+
+// ── Store search (single-select) ─────────────────────────
+function rqGetStores() {
+  return (storeData || []).map(s => ({
+    id: s['Store id'] || '',
+    name: s['name Non-WZ'] || s.name || '',
+    addr: s.address || '',
+    phone: s.phone || ''
+  })).filter(s => s.name);
+}
+function rqOpenDrop(p) { if (!rqSelStore[p]) rqFilter(p); }
+function rqFilter(p) {
+  const q = (document.getElementById(p + '-store-q').value || '').toLowerCase();
+  const drop = document.getElementById(p + '-drop');
+  const hits = rqGetStores().filter(s =>
+    s.name.toLowerCase().includes(q) || s.addr.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
+  ).slice(0, 30);
+  drop.innerHTML = hits.length
+    ? hits.map(s =>
+        `<div class="rq-s-item" onclick="rqPickStore('${p}','${rqEj(s.id)}','${rqEj(s.name)}','${rqEj(s.addr)}','${rqEj(s.phone)}')">
+          <div class="sn">${rqEh(s.name)}</div>
+          <div class="sa">${rqEh(s.addr)}</div>
+          <div class="sid">${rqEh(s.id)}</div>
+        </div>`
+      ).join('')
+    : '<div class="rq-s-item" style="color:var(--muted)">No stores found</div>';
+  drop.classList.add('open');
+}
+function rqPickStore(p, id, name, addr, phone) {
+  rqSelStore[p] = { id, name, addr, phone };
+  document.getElementById(p + '-store-q').value = '';
+  document.getElementById(p + '-drop').classList.remove('open');
+  document.getElementById(p + '-pill-name').textContent = name + (id ? ' (' + id + ')' : '');
+  document.getElementById(p + '-pill-addr').textContent = addr;
+  document.getElementById(p + '-pill').classList.add('visible');
+  rqHideE(p + '-store-e');
+}
+function rqClear(p) {
+  rqSelStore[p] = null;
+  document.getElementById(p + '-store-q').value = '';
+  document.getElementById(p + '-pill').classList.remove('visible');
+}
+
+// ── Brinks multi-store ────────────────────────────────────
+function rqBrFilterStores() {
+  const q = (document.getElementById('rbr-store-q').value || '').toLowerCase();
+  const drop = document.getElementById('rbr-drop');
+  const hits = rqGetStores().filter(s =>
+    !rqBrStores.find(x => x.id === s.id) &&
+    (s.name.toLowerCase().includes(q) || s.addr.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
+  ).slice(0, 30);
+  drop.innerHTML = hits.length
+    ? hits.map(s =>
+        `<div class="rq-s-item" onclick="rqBrPick('${rqEj(s.id)}','${rqEj(s.name)}','${rqEj(s.addr)}')">
+          <div class="sn">${rqEh(s.name)}</div><div class="sa">${rqEh(s.addr)}</div><div class="sid">${rqEh(s.id)}</div>
+        </div>`
+      ).join('')
+    : '<div class="rq-s-item" style="color:var(--muted)">No stores found</div>';
+  drop.classList.add('open');
+}
+function rqBrPick(id, name, addr) {
+  if (rqBrStores.find(x => x.id === id)) return;
+  rqBrStores.push({ id, name, addr });
+  document.getElementById('rbr-store-q').value = '';
+  document.getElementById('rbr-drop').classList.remove('open');
+  rqBrRenderChips();
+  rqHideE('rbr-store-e');
+}
+function rqBrRemove(id) {
+  rqBrStores = rqBrStores.filter(x => x.id !== id);
+  rqBrRenderChips();
+}
+function rqBrRenderChips() {
+  document.getElementById('rbr-chips').innerHTML = rqBrStores.map(s =>
+    `<div class="rq-chip">${rqEh(s.name)} (${rqEh(s.id)})<button class="rq-chip-x" onclick="rqBrRemove('${rqEj(s.id)}')">✕</button></div>`
+  ).join('');
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', function(e) {
+  ['rs','rb','rbc','rsh','rsp'].forEach(p => {
+    const d = document.getElementById(p + '-drop');
+    const i = document.getElementById(p + '-store-q');
+    if (d && i && !d.contains(e.target) && e.target !== i) d.classList.remove('open');
+  });
+  const bd = document.getElementById('rbr-drop');
+  const bi = document.getElementById('rbr-store-q');
+  if (bd && bi && !bd.contains(e.target) && e.target !== bi) bd.classList.remove('open');
+});
+
+// ── Radio tiles ───────────────────────────────────────────
+function rqSel(el, name) {
+  document.querySelectorAll('input[name="' + name + '"]').forEach(r => r.closest('.rq-r-opt').classList.remove('sel'));
+  el.classList.add('sel');
+}
+function rqGetR(name) { const c = document.querySelector('input[name="' + name + '"]:checked'); return c ? c.value : null; }
+
+// ── Conditional fields ────────────────────────────────────
+function rqTogglePersonal(on) { document.getElementById('rbc-personal-sec').classList.toggle('on', on); }
+function rqShowCell(on) { document.getElementById('rbc-cell-fg').classList.toggle('on', on); }
+function rqToggleWzEmail(val) { document.getElementById('rbc-wz-email-fg').classList.toggle('on', val === 'WZ Email Address'); }
+function rqToggleBcStore(on) { document.getElementById('rbc-store-search-wrap').classList.toggle('on', on); if (!on) rqClear('rbc'); }
+function rqShowOther(id) { document.getElementById(id).classList.add('on'); }
+function rqHideOther(id) { document.getElementById(id).classList.remove('on'); }
+
+// ── Validation helpers ────────────────────────────────────
+function rqShowE(id) { const e = document.getElementById(id); if(e) e.classList.add('on'); }
+function rqHideE(id) { const e = document.getElementById(id); if(e) e.classList.remove('on'); }
+function rqGv(id) { const e = document.getElementById(id); return e ? (e.value || '').trim() : ''; }
+function rqShowGerr(id, msg) { const e = document.getElementById(id); if(e){ e.textContent = msg; e.classList.add('on'); } }
+function rqSetLoad(id, on) {
+  const b = document.getElementById(id); if(!b) return;
+  if (on) { b.disabled = true; b.innerHTML = '<span class="rq-spin"></span> Submitting…'; }
+  else    { b.disabled = false; b.textContent = 'Submit Request'; }
+}
+
+// ── POST helper ───────────────────────────────────────────
+function rqPostForm(data, onSuccess, onError, btnId) {
+  rqSetLoad(btnId, true);
+  fetch(SUBMIT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(data) })
+    .then(r => r.json())
+    .then(r => { rqSetLoad(btnId, false); if(r && r.success) onSuccess(); else onError((r && r.error) || 'Submission failed. Please try again.'); })
+    .catch(() => { rqSetLoad(btnId, false); onError('Network error — please try again.'); });
+}
+
+// ── Submit: Shirt ─────────────────────────────────────────
+function rqSubmitShirt() {
+  ['rs-name-e','rs-store-e','rs-shirt-e','rs-sw-e','rs-gerr'].forEach(rqHideE);
+  let ok = true;
+  const name = rqGv('rs-name'), store = rqSelStore.rs, shirt = rqGetR('rs-shirt'), sw = rqGetR('rs-sw');
+  if (!name)  { rqShowE('rs-name-e');  ok = false; }
+  if (!store) { rqShowE('rs-store-e'); ok = false; }
+  if (!shirt) { rqShowE('rs-shirt-e'); ok = false; }
+  if (!sw)    { rqShowE('rs-sw-e');    ok = false; }
+  if (!ok) return;
+  rqPostForm(
+    { formType:'shirt', employeeName:name, employeeEmail:rqGv('rs-email'), storeName:store.name, storeId:store.id, storeAddress:store.addr, shirtSize:shirt, sweaterSize:sw, comments:rqGv('rs-comments') },
+    () => rqSuc('Apparel Request Submitted!', 'Your shirt & sweater order is on its way.'),
+    msg => rqShowGerr('rs-gerr', msg), 'rs-btn'
+  );
+}
+
+// ── Submit: Badge ─────────────────────────────────────────
+function rqSubmitBadge() {
+  ['rb-name-e','rb-pref-e','rb-store-e','rb-role-e','rb-gerr'].forEach(rqHideE);
+  let ok = true;
+  const name = rqGv('rb-name'), pref = rqGv('rb-preferred'), store = rqSelStore.rb, roleRaw = rqGetR('rb-role');
+  const role = roleRaw === 'Other' ? (rqGv('rb-role-custom') || 'Other') : (roleRaw || '');
+  if (!name)    { rqShowE('rb-name-e');  ok = false; }
+  if (!pref)    { rqShowE('rb-pref-e');  ok = false; }
+  if (!store)   { rqShowE('rb-store-e'); ok = false; }
+  if (!roleRaw) { rqShowE('rb-role-e');  ok = false; }
+  if (!ok) return;
+  rqPostForm(
+    { formType:'badge', employeeName:name, employeeEmail:rqGv('rb-email'), preferredName:pref, storeName:store.name, storeId:store.id, storeAddress:store.addr, role, additionalInfo:rqGv('rb-info') },
+    () => rqSuc('ID Badge Requested!', 'Your badge request has been received.'),
+    msg => rqShowGerr('rb-gerr', msg), 'rb-btn'
+  );
+}
+
+// ── Submit: Business Cards ────────────────────────────────
+function rqSubmitBizcard() {
+  ['rbc-type-e','rbc-name-e','rbc-ph-e','rbc-store-e','rbc-gerr','rbc-wz-email-e'].forEach(rqHideE);
+  let ok = true;
+  const ctype = rqGetR('rbc-type'), storeOpt = rqGetR('rbc-store-opt'), store = rqSelStore.rbc;
+  if (!ctype) { rqShowE('rbc-type-e'); ok = false; }
+  if (storeOpt === 'yes' && !store) { rqShowE('rbc-store-e'); ok = false; }
+  let fname = '', titleRaw = '', title = '', ph = '', cell = '', emailVal = '';
+  if (ctype === 'Personal Cards') {
+    fname = rqGv('rbc-name');
+    titleRaw = rqGetR('rbc-title') || '';
+    title = titleRaw === 'Other' ? (rqGv('rbc-title-custom') || 'Other') : titleRaw;
+    ph = rqGetR('rbc-ph'); cell = rqGv('rbc-cell');
+    const emailSel = document.getElementById('rbc-email-sel') ? document.getElementById('rbc-email-sel').value : '';
+    emailVal = emailSel === 'WZ Email Address' ? (rqGv('rbc-wz-email') || 'WZ Email Address') : emailSel;
+    if (!fname) { rqShowE('rbc-name-e'); ok = false; }
+    if (!ph)    { rqShowE('rbc-ph-e');   ok = false; }
+    if (emailSel === 'WZ Email Address' && !rqGv('rbc-wz-email')) { rqShowE('rbc-wz-email-e'); ok = false; }
+  }
+  if (!ok) return;
+  rqPostForm(
+    { formType:'bizcard', cardType:ctype, fullName:fname, jobTitle:title, phoneOnCard:ph, cellPhone:cell, email:emailVal,
+      storeName:store ? store.name : '', storeId:store ? store.id : '', storeAddress:store ? store.addr : '', storePhone:store ? store.phone : '' },
+    () => rqSuc('Business Cards Requested!', 'Your order has been received.'),
+    msg => rqShowGerr('rbc-gerr', msg), 'rbc-btn'
+  );
+}
+
+// ── Submit: Shipping ──────────────────────────────────────
+function rqSubmitShipping() {
+  ['rsh-store-e','rsh-email-e','rsh-cust-e','rsh-addr-e','rsh-city-e','rsh-state-e','rsh-zip-e','rsh-phone-e','rsh-sig-e','rsh-items-e','rsh-value-e','rsh-gerr'].forEach(rqHideE);
+  let ok = true;
+  const store = rqSelStore.rsh;
+  const lemail = rqGv('rsh-label-email'), cname = rqGv('rsh-cust-name'), addr1 = rqGv('rsh-addr1');
+  const city = rqGv('rsh-city'), state = rqGv('rsh-state'), zip = rqGv('rsh-zip'), phone = rqGv('rsh-phone');
+  const sig = rqGetR('rsh-sig'), items = rqGv('rsh-items'), val = rqGv('rsh-value');
+  if (!store)  { rqShowE('rsh-store-e'); ok = false; }
+  if (!lemail) { rqShowE('rsh-email-e'); ok = false; }
+  if (!cname)  { rqShowE('rsh-cust-e');  ok = false; }
+  if (!addr1)  { rqShowE('rsh-addr-e');  ok = false; }
+  if (!city)   { rqShowE('rsh-city-e');  ok = false; }
+  if (!state)  { rqShowE('rsh-state-e'); ok = false; }
+  if (!zip)    { rqShowE('rsh-zip-e');   ok = false; }
+  if (!phone)  { rqShowE('rsh-phone-e'); ok = false; }
+  if (!sig)    { rqShowE('rsh-sig-e');   ok = false; }
+  if (!items)  { rqShowE('rsh-items-e'); ok = false; }
+  if (!val)    { rqShowE('rsh-value-e'); ok = false; }
+  if (!ok) return;
+  rqPostForm(
+    { formType:'shipping', storeName:store.name, storeId:store.id, storeAddress:store.addr, labelEmail:lemail,
+      customerName:cname, attentionTo:rqGv('rsh-attn'), shipAddr1:addr1, shipAddr2:rqGv('rsh-addr2'),
+      shipCity:city, shipState:state, shipZip:zip, customerPhone:phone, customerEmail:rqGv('rsh-cust-email'),
+      signatureRequired:sig, items, shipmentValue:val, comments:rqGv('rsh-comments') },
+    () => rqSuc('Shipping Label Requested!', 'The label will be sent to ' + lemail + ' shortly.'),
+    msg => rqShowGerr('rsh-gerr', msg), 'rsh-btn'
+  );
+}
+
+// ── Submit: Supplies ──────────────────────────────────────
+function rqSubmitSupplies() {
+  ['rsp-name-e','rsp-store-e','rsp-pri-e','rsp-gerr'].forEach(rqHideE);
+  let ok = true;
+  const store = rqSelStore.rsp, pri = rqGetR('rsp-pri');
+  if (!rqGv('rsp-name')) { rqShowE('rsp-name-e');  ok = false; }
+  if (!store)            { rqShowE('rsp-store-e'); ok = false; }
+  if (!pri)              { rqShowE('rsp-pri-e');   ok = false; }
+  if (!ok) return;
+  rqPostForm(
+    { formType:'supplies', employeeName:rqGv('rsp-name'), storeName:store.name, storeId:store.id, storeAddress:store.addr,
+      order:rqGv('rsp-order'), amazonLinks:rqGv('rsp-amazon'), priority:pri },
+    () => rqSuc('Supplies Order Submitted!', 'Your order has been received and will be processed.'),
+    msg => rqShowGerr('rsp-gerr', msg), 'rsp-btn'
+  );
+}
+
+// ── Submit: Brinks ────────────────────────────────────────
+function rqSubmitBrinks() {
+  ['rbr-req-type-e','rbr-first-e','rbr-last-e','rbr-email-e','rbr-phone-e','rbr-store-e','rbr-gerr'].forEach(rqHideE);
+  let ok = true;
+  const reqType = rqGetR('rbr-req-type');
+  if (!reqType)              { rqShowE('rbr-req-type-e'); ok = false; }
+  if (!rqGv('rbr-first'))    { rqShowE('rbr-first-e');    ok = false; }
+  if (!rqGv('rbr-last'))     { rqShowE('rbr-last-e');     ok = false; }
+  if (!rqGv('rbr-email'))    { rqShowE('rbr-email-e');    ok = false; }
+  if (!rqGv('rbr-phone'))    { rqShowE('rbr-phone-e');    ok = false; }
+  if (!rqBrStores.length)    { rqShowE('rbr-store-e');    ok = false; }
+  if (!ok) return;
+  const storeList = rqBrStores.map(s => s.name + ' (' + s.id + ')').join(', ');
+  rqPostForm(
+    { formType:'brinks', requestType:reqType, firstName:rqGv('rbr-first'), lastName:rqGv('rbr-last'),
+      wzEmail:rqGv('rbr-email'), phone:rqGv('rbr-phone'), stores:storeList },
+    () => rqSuc('Brinks Access Requested!', 'Your request has been received and will be processed.'),
+    msg => rqShowGerr('rbr-gerr', msg), 'rbr-btn'
+  );
+}
+
+// ── Reset ─────────────────────────────────────────────────
+function rqReset(t) {
+  const fieldMap = {
+    shirt:    ['rs-name','rs-email','rs-comments'],
+    badge:    ['rb-name','rb-email','rb-preferred','rb-info','rb-role-custom'],
+    bizcard:  ['rbc-name','rbc-cell','rbc-title-custom','rbc-wz-email'],
+    shipping: ['rsh-label-email','rsh-cust-name','rsh-attn','rsh-addr1','rsh-addr2','rsh-city','rsh-state','rsh-zip','rsh-phone','rsh-cust-email','rsh-items','rsh-value','rsh-comments'],
+    supplies: ['rsp-name','rsp-order','rsp-amazon'],
+    brinks:   ['rbr-first','rbr-last','rbr-email','rbr-phone']
+  };
+  (fieldMap[t] || []).forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; });
+  // Clear radios
+  const pg = document.getElementById('rq-' + t);
+  if (pg) {
+    pg.querySelectorAll('.rq-r-opt.sel').forEach(e => { e.classList.remove('sel'); const r = e.querySelector('input'); if(r) r.checked = false; });
+    pg.querySelectorAll('.rq-err.on,.rq-global-err.on').forEach(e => e.classList.remove('on'));
+    pg.querySelectorAll('.rq-cond.on').forEach(e => e.classList.remove('on'));
+  }
+  // Clear store pills
+  ['rs','rb','rbc','rsh','rsp'].forEach(p => { rqSelStore[p] = null; const pill = document.getElementById(p + '-pill'); if(pill) pill.classList.remove('visible'); const q = document.getElementById(p + '-store-q'); if(q) q.value = ''; });
+  rqBrStores = []; rqBrRenderChips();
+  const bq = document.getElementById('rbr-store-q'); if(bq) bq.value = '';
+  // Reset btn labels
+  ['rs-btn','rb-btn','rbc-btn','rsh-btn','rsp-btn','rbr-btn'].forEach(id => { const b = document.getElementById(id); if(b){ b.disabled = false; b.textContent = 'Submit Request'; } });
+  const sel = document.getElementById('rbc-email-sel'); if(sel) sel.value = '';
+}
+
+// ── Escape helpers ────────────────────────────────────────
+function rqEj(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function rqEh(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+
+// ════════════════════════════════════════════════════════
+//  ADMIN — SUBMISSIONS TODO DASHBOARD
+// ════════════════════════════════════════════════════════
+const TODO_DONE_KEY = 'rq-todo-done';
+let todoItems = [];
+let todoFilter = 'all'; // 'all' | 'pending' | 'done'
+let todoTypeFilter = 'all';
+
+function adminSwitchTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('atab-' + tab).classList.add('active');
+  document.getElementById('apanel-' + tab).classList.add('active');
+  if (tab === 'submissions') adminLoadSubmissions();
+}
+
+function todoDoneSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(TODO_DONE_KEY) || '[]')); } catch { return new Set(); }
+}
+function todoMarkDone(key, done) {
+  const s = todoDoneSet();
+  done ? s.add(key) : s.delete(key);
+  try { localStorage.setItem(TODO_DONE_KEY, JSON.stringify([...s])); } catch {}
+  todoRender();
+}
+
+function adminLoadSubmissions() {
+  const root = document.getElementById('todo-root');
+  if (!root) return;
+  root.innerHTML = '<div class="admin-loading">Loading submissions…</div>';
+  fetch(SUBMIT_URL + '?action=listSubmissions')
+    .then(r => r.json())
+    .then(data => {
+      todoItems = Array.isArray(data) ? data : (data.submissions || data.rows || []);
+      todoRender();
+    })
+    .catch(() => {
+      root.innerHTML = `
+        <div class="todo-setup-note">
+          <strong>⚙️ Setup required</strong><br>
+          To display submissions here, add a <code>doGet</code> handler to your Apps Script that returns all submissions as JSON.<br><br>
+          <strong>Example response format:</strong><br>
+          <code>[{ "formType":"shirt", "employeeName":"Jane Smith", "storeName":"Store A", "timestamp":"2024-01-01" }, …]</code><br><br>
+          Once deployed, submissions from all 6 forms will appear here as a filterable to-do list.
+        </div>
+        ${todoItems.length ? '' : ''}
+      `;
+      // Still render any cached items
+      if (todoItems.length) todoRender();
+    });
+}
+
+function todoRender() {
+  const root = document.getElementById('todo-root');
+  if (!root) return;
+  const done = todoDoneSet();
+  const types = [...new Set(todoItems.map(i => i.formType).filter(Boolean))];
+
+  let filtered = todoItems.filter(item => {
+    const isDone = done.has(todoKey(item));
+    if (todoFilter === 'pending' && isDone) return false;
+    if (todoFilter === 'done' && !isDone) return false;
+    if (todoTypeFilter !== 'all' && item.formType !== todoTypeFilter) return false;
+    return true;
+  });
+
+  const pendingCount = todoItems.filter(i => !done.has(todoKey(i))).length;
+
+  const typeChips = ['all', ...types].map(t =>
+    `<button class="todo-filter-chip${todoTypeFilter === t ? ' active' : ''}" onclick="todoSetType('${t}')">${t === 'all' ? 'All Types' : t}</button>`
+  ).join('');
+
+  const statusChips = [
+    { v:'all',     l:'All' },
+    { v:'pending', l:`⏳ Pending (${pendingCount})` },
+    { v:'done',    l:'✅ Done' }
+  ].map(c =>
+    `<button class="todo-filter-chip${todoFilter === c.v ? ' active' : ''}" onclick="todoSetFilter('${c.v}')">${c.l}</button>`
+  ).join('');
+
+  const rows = filtered.length
+    ? filtered.map(item => {
+        const key = todoKey(item);
+        const isDone = done.has(key);
+        const who = item.employeeName || ((item.firstName || '') + ' ' + (item.lastName || '')).trim() || '—';
+        const where = item.storeName || '—';
+        const when = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+        const typeClass = 'todo-type-' + (item.formType === 'badge' ? 'badge_req' : (item.formType || ''));
+        return `
+          <div class="todo-item${isDone ? ' done' : ''}" id="todo-${rqEh(key)}">
+            <div class="todo-cb" onclick="todoMarkDone('${rqEj(key)}',${!isDone})"></div>
+            <div class="todo-body">
+              <div class="todo-title">${rqEh(who)} — ${rqEh(where)}</div>
+              <div class="todo-meta">
+                <span class="todo-type-badge ${typeClass}">${item.formType || 'request'}</span>
+                ${when ? `<span>${when}</span>` : ''}
+                ${item.priority ? `<span style="color:var(--red);font-weight:700;">${item.priority}</span>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('')
+    : `<div class="admin-empty">${todoFilter === 'done' ? '🎉 No completed items yet.' : '✅ No pending submissions.'}</div>`;
+
+  root.innerHTML = `
+    <div class="admin-card" style="margin-bottom:12px;">
+      <div class="todo-filters">${statusChips}</div>
+      <div class="todo-filters" style="padding-top:8px;">${typeChips}</div>
+    </div>
+    <div class="admin-card">${rows}</div>
+    <div style="padding:10px 0;font-size:11px;color:var(--muted);text-align:right;">
+      ${filtered.length} of ${todoItems.length} submissions shown · done status stored locally
+    </div>
+  `;
+}
+
+function todoKey(item) {
+  return [item.formType, item.employeeName || item.firstName, item.storeName, item.timestamp].join('|');
+}
+function todoSetFilter(v) { todoFilter = v; todoRender(); }
+function todoSetType(v)   { todoTypeFilter = v; todoRender(); }
 
 // ── Manager Portal ready ──────────────────────────────────────────────────────
 </script>
