@@ -3320,10 +3320,13 @@ function todoMarkDone(idx, done, event) {
 }
 
 // ── Expand / collapse row ─────────────────────────────────
-function todoToggleExpand(key) {
+// origIdx = index into todoItems (a plain number → zero escaping issues in id/DOM lookup)
+function todoToggleExpand(origIdx) {
+  const item = todoItems[origIdx];
+  if (!item) return;
+  const key = todoKey(item);
   todoExpanded.has(key) ? todoExpanded.delete(key) : todoExpanded.add(key);
-  // Toggle just the wrap class — no full re-render needed
-  const wrap = document.getElementById('tw-' + CSS.escape(key));
+  const wrap = document.getElementById('tw-' + origIdx);
   if (wrap) wrap.classList.toggle('expanded', todoExpanded.has(key));
 }
 
@@ -3380,9 +3383,9 @@ function todoRender() {
       : '<div class="todo-dl" style="grid-column:1/-1;color:var(--muted)">No detail data — redeploy Apps Script to enable.</div>';
 
     return `
-      <div class="todo-item-wrap${isExpanded ? ' expanded' : ''}" id="tw-${rqEh(key)}">
-        <div class="todo-item${isDone ? ' done' : ''}" onclick="todoToggleExpand('${rqEj(key)}')">
-          <div class="todo-cb${isDone ? '' : ''}" onclick="todoMarkDone(${origIdx},${!isDone},event)">
+      <div class="todo-item-wrap${isExpanded ? ' expanded' : ''}" id="tw-${origIdx}">
+        <div class="todo-item${isDone ? ' done' : ''}" onclick="todoToggleExpand(${origIdx})">
+          <div class="todo-cb" onclick="todoMarkDone(${origIdx},${!isDone},event)">
             ${isDone ? '<span style="font-size:10px;color:#166534;font-weight:800;">✓</span>' : ''}
           </div>
           <div class="todo-body">
