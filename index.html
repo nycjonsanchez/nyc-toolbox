@@ -846,6 +846,23 @@ html, body {
 .todo-filter-chip.active { background:var(--red); color:#fff; border-color:var(--red); }
 .todo-setup-note { background:#fff8e1; border:1px solid #fbbf24; border-radius:10px; padding:14px 16px; margin:16px; font-size:12px; color:#92400e; line-height:1.6; }
 .todo-setup-note code { background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px; }
+/* expand / detail panel */
+.todo-item-wrap { border-bottom:1px solid var(--border); }
+.todo-item-wrap:last-child { border-bottom:none; }
+.todo-item { border-bottom:none; cursor:pointer; }
+.todo-item:hover { background:var(--surface); }
+.todo-chevron { font-size:13px; color:var(--muted); margin-left:8px; transition:transform .2s; flex-shrink:0; line-height:1; }
+.todo-item-wrap.expanded .todo-chevron { transform:rotate(90deg); color:var(--red); }
+.todo-detail { display:none; padding:10px 16px 14px 46px; border-top:1px solid var(--border); background:var(--surface); animation:fadeUp .15s ease; }
+.todo-item-wrap.expanded .todo-detail { display:block; }
+.todo-detail-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 14px; align-items:baseline; }
+.todo-dl { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); white-space:nowrap; }
+.todo-dd { font-size:12px; color:var(--text); word-break:break-word; font-weight:500; }
+.todo-dd.long { white-space:pre-wrap; line-height:1.5; }
+.todo-status-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+.todo-status-pill.done    { background:#dcfce7; color:#166534; }
+.todo-status-pill.pending { background:#fff7ed; color:#c2410c; }
+.todo-cb.saving { opacity:.4; pointer-events:none; }
 
 @media(min-width:768px){
   .rq-menu-grid { grid-template-columns:repeat(3,1fr); }
@@ -3230,10 +3247,12 @@ function rqEh(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 //  ADMIN — SUBMISSIONS TODO DASHBOARD
 // ════════════════════════════════════════════════════════
 const TODO_DONE_KEY = 'rq-todo-done';
-let todoItems = [];
-let todoFilter = 'all'; // 'all' | 'pending' | 'done'
+let todoItems      = [];
+let todoFilter     = 'all';   // 'all' | 'pending' | 'done'
 let todoTypeFilter = 'all';
+let todoExpanded   = new Set(); // keys of expanded rows
 
+// ── Tab switcher ──────────────────────────────────────────
 function adminSwitchTab(tab) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
@@ -3242,61 +3261,88 @@ function adminSwitchTab(tab) {
   if (tab === 'submissions') adminLoadSubmissions();
 }
 
+// ── Local done-state (optimistic, also seeded from sheet) ─
 function todoDoneSet() {
   try { return new Set(JSON.parse(localStorage.getItem(TODO_DONE_KEY) || '[]')); } catch { return new Set(); }
 }
-function todoMarkDone(key, done) {
-  const s = todoDoneSet();
-  done ? s.add(key) : s.delete(key);
-  try { localStorage.setItem(TODO_DONE_KEY, JSON.stringify([...s])); } catch {}
-  todoRender();
+function todoDoneSave(set) {
+  try { localStorage.setItem(TODO_DONE_KEY, JSON.stringify([...set])); } catch {}
 }
 
+// ── Fetch submissions ─────────────────────────────────────
 function adminLoadSubmissions() {
   const root = document.getElementById('todo-root');
   if (!root) return;
   root.innerHTML = '<div class="admin-loading">Loading submissions…</div>';
+
   fetch(SUBMIT_URL + '?action=listSubmissions')
     .then(r => r.json())
     .then(data => {
       todoItems = Array.isArray(data) ? data : (data.submissions || data.rows || []);
+      // Seed localStorage from the sheet's Status column so they stay in sync
+      const synced = new Set();
+      todoItems.forEach(item => { if (item.status === 'Done') synced.add(todoKey(item)); });
+      todoDoneSave(synced);
       todoRender();
     })
     .catch(() => {
       root.innerHTML = `
         <div class="todo-setup-note">
-          <strong>⚙️ Setup required</strong><br>
-          To display submissions here, add a <code>doGet</code> handler to your Apps Script that returns all submissions as JSON.<br><br>
-          <strong>Example response format:</strong><br>
-          <code>[{ "formType":"shirt", "employeeName":"Jane Smith", "storeName":"Store A", "timestamp":"2024-01-01" }, …]</code><br><br>
-          Once deployed, submissions from all 6 forms will appear here as a filterable to-do list.
-        </div>
-        ${todoItems.length ? '' : ''}
-      `;
-      // Still render any cached items
-      if (todoItems.length) todoRender();
+          <strong>⚙️ Apps Script not yet deployed</strong><br>
+          Paste the updated <strong>Code.gs</strong> into your Apps Script editor, then redeploy as a new version.
+          Once live, all form submissions will appear here with full detail expand &amp; sheet sync.
+        </div>`;
     });
 }
 
+// ── Mark done / pending — updates sheet + local state ─────
+function todoMarkDone(idx, done, event) {
+  if (event) event.stopPropagation(); // don't trigger expand
+  const item = todoItems[idx];
+  if (!item) return;
+  const key = todoKey(item);
+
+  // Optimistic UI
+  const s = todoDoneSet();
+  done ? s.add(key) : s.delete(key);
+  todoDoneSave(s);
+  item.status = done ? 'Done' : '';
+  todoRender();
+
+  // Sync to Google Sheet (silent fail — local state is source of truth)
+  if (item.sheetName && item.rowIndex) {
+    fetch(SUBMIT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify({ action:'updateStatus', sheetName:item.sheetName, rowIndex:item.rowIndex, status: done ? 'Done' : '' })
+    }).catch(() => {});
+  }
+}
+
+// ── Expand / collapse row ─────────────────────────────────
+function todoToggleExpand(key) {
+  todoExpanded.has(key) ? todoExpanded.delete(key) : todoExpanded.add(key);
+  // Toggle just the wrap class — no full re-render needed
+  const wrap = document.getElementById('tw-' + CSS.escape(key));
+  if (wrap) wrap.classList.toggle('expanded', todoExpanded.has(key));
+}
+
+// ── Render ────────────────────────────────────────────────
 function todoRender() {
   const root = document.getElementById('todo-root');
   if (!root) return;
-  const done = todoDoneSet();
+  const done  = todoDoneSet();
   const types = [...new Set(todoItems.map(i => i.formType).filter(Boolean))];
 
-  let filtered = todoItems.filter(item => {
+  const filtered = todoItems.filter((item, i) => {
     const isDone = done.has(todoKey(item));
-    if (todoFilter === 'pending' && isDone) return false;
-    if (todoFilter === 'done' && !isDone) return false;
+    if (todoFilter === 'pending' && isDone)  return false;
+    if (todoFilter === 'done'    && !isDone) return false;
     if (todoTypeFilter !== 'all' && item.formType !== todoTypeFilter) return false;
     return true;
   });
 
   const pendingCount = todoItems.filter(i => !done.has(todoKey(i))).length;
-
-  const typeChips = ['all', ...types].map(t =>
-    `<button class="todo-filter-chip${todoTypeFilter === t ? ' active' : ''}" onclick="todoSetType('${t}')">${t === 'all' ? 'All Types' : t}</button>`
-  ).join('');
 
   const statusChips = [
     { v:'all',     l:'All' },
@@ -3306,43 +3352,76 @@ function todoRender() {
     `<button class="todo-filter-chip${todoFilter === c.v ? ' active' : ''}" onclick="todoSetFilter('${c.v}')">${c.l}</button>`
   ).join('');
 
-  const rows = filtered.length
-    ? filtered.map(item => {
-        const key = todoKey(item);
-        const isDone = done.has(key);
-        const who = item.employeeName || ((item.firstName || '') + ' ' + (item.lastName || '')).trim() || '—';
-        const where = item.storeName || '—';
-        const when = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-        const typeClass = 'todo-type-' + (item.formType === 'badge' ? 'badge_req' : (item.formType || ''));
-        return `
-          <div class="todo-item${isDone ? ' done' : ''}" id="todo-${rqEh(key)}">
-            <div class="todo-cb" onclick="todoMarkDone('${rqEj(key)}',${!isDone})"></div>
-            <div class="todo-body">
-              <div class="todo-title">${rqEh(who)} — ${rqEh(where)}</div>
-              <div class="todo-meta">
-                <span class="todo-type-badge ${typeClass}">${item.formType || 'request'}</span>
-                ${when ? `<span>${when}</span>` : ''}
-                ${item.priority ? `<span style="color:var(--red);font-weight:700;">${item.priority}</span>` : ''}
-              </div>
+  const typeChips = ['all', ...types].map(t =>
+    `<button class="todo-filter-chip${todoTypeFilter === t ? ' active' : ''}" onclick="todoSetType('${t}')">${t === 'all' ? 'All Types' : t}</button>`
+  ).join('');
+
+  const rows = filtered.length ? filtered.map(item => {
+    // Find original index so we can pass it to todoMarkDone
+    const origIdx = todoItems.indexOf(item);
+    const key     = todoKey(item);
+    const isDone  = done.has(key);
+    const who     = item.employeeName || '—';
+    const where   = item.storeName   || '—';
+    const when    = item.timestamp
+      ? new Date(item.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})
+      : '';
+    const typeClass = 'todo-type-' + (item.formType === 'badge' ? 'badge_req' : (item.formType || ''));
+    const isExpanded = todoExpanded.has(key);
+
+    // ── Detail panel: all named fields from the sheet row ──
+    const fieldRows = item.fields
+      ? Object.entries(item.fields)
+          .filter(([k]) => k !== 'Timestamp')
+          .map(([k, v]) => {
+            const isLong = v.length > 60 || v.includes('\n');
+            return `<div class="todo-dl">${rqEh(k)}</div><div class="todo-dd${isLong ? ' long' : ''}">${rqEh(v)}</div>`;
+          }).join('')
+      : '<div class="todo-dl" style="grid-column:1/-1;color:var(--muted)">No detail data — redeploy Apps Script to enable.</div>';
+
+    return `
+      <div class="todo-item-wrap${isExpanded ? ' expanded' : ''}" id="tw-${rqEh(key)}">
+        <div class="todo-item${isDone ? ' done' : ''}" onclick="todoToggleExpand('${rqEj(key)}')">
+          <div class="todo-cb${isDone ? '' : ''}" onclick="todoMarkDone(${origIdx},${!isDone},event)">
+            ${isDone ? '<span style="font-size:10px;color:#166534;font-weight:800;">✓</span>' : ''}
+          </div>
+          <div class="todo-body">
+            <div class="todo-title">${rqEh(who)} — ${rqEh(where)}</div>
+            <div class="todo-meta">
+              <span class="todo-type-badge ${typeClass}">${item.formType || 'request'}</span>
+              ${when ? `<span>${when}</span>` : ''}
+              ${item.priority ? `<span style="color:var(--red);font-weight:700;">${rqEh(item.priority)} Priority</span>` : ''}
+              ${isDone
+                ? `<span class="todo-status-pill done">✅ Done</span>`
+                : `<span class="todo-status-pill pending">⏳ Pending</span>`}
             </div>
-          </div>`;
-      }).join('')
-    : `<div class="admin-empty">${todoFilter === 'done' ? '🎉 No completed items yet.' : '✅ No pending submissions.'}</div>`;
+          </div>
+          <span class="todo-chevron">›</span>
+        </div>
+        <div class="todo-detail">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;">
+            Submission Detail · ${when}
+            ${item.sheetName ? `<span style="margin-left:8px;color:var(--red);">📊 ${rqEh(item.sheetName)}</span>` : ''}
+          </div>
+          <div class="todo-detail-grid">${fieldRows}</div>
+        </div>
+      </div>`;
+  }).join('')
+  : `<div class="admin-empty">${todoFilter === 'done' ? '🎉 No completed items yet.' : '✅ No pending submissions.'}</div>`;
 
   root.innerHTML = `
     <div class="admin-card" style="margin-bottom:12px;">
       <div class="todo-filters">${statusChips}</div>
-      <div class="todo-filters" style="padding-top:8px;">${typeChips}</div>
+      <div class="todo-filters" style="padding-top:6px;">${typeChips}</div>
     </div>
     <div class="admin-card">${rows}</div>
-    <div style="padding:10px 0;font-size:11px;color:var(--muted);text-align:right;">
-      ${filtered.length} of ${todoItems.length} submissions shown · done status stored locally
-    </div>
-  `;
+    <div style="padding:8px 0 4px;font-size:11px;color:var(--muted);text-align:right;">
+      ${filtered.length} of ${todoItems.length} total · ✓ syncs to Google Sheet
+    </div>`;
 }
 
 function todoKey(item) {
-  return [item.formType, item.employeeName || item.firstName, item.storeName, item.timestamp].join('|');
+  return [item.formType, item.sheetName, item.rowIndex, item.timestamp].join('|');
 }
 function todoSetFilter(v) { todoFilter = v; todoRender(); }
 function todoSetType(v)   { todoTypeFilter = v; todoRender(); }
