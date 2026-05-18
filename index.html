@@ -968,9 +968,6 @@ html, body {
   <div class="sidebar-item" id="snav-tools" onclick="switchTab('tools')">
     <span class="sidebar-icon">🛠️</span><span class="sidebar-label">Tools</span>
   </div>
-  <div class="sidebar-item" id="snav-kpi" onclick="switchTab('kpi')">
-    <span class="sidebar-icon">📊</span><span class="sidebar-label">KPI Reference</span>
-  </div>
   <div class="sidebar-item" id="snav-requests" onclick="switchTab('requests')">
     <span class="sidebar-icon">📋</span><span class="sidebar-label">Employee Requests</span>
   </div>
@@ -1009,11 +1006,6 @@ html, body {
     <div class="link-grid" id="link-grid"></div>
   </div>
 
-  <div class="section" id="section-kpi">
-    <div class="section-header"><div class="section-title">KPI Reference</div></div>
-    <div class="kpi-section-label">VERIZON CORE METRICS</div>
-    <div class="kpi-grid" id="kpi-grid"></div>
-  </div>
 
   <!-- ── MANAGER VERIFICATION PORTAL ── -->
   <div class="section" id="section-manager" style="overflow:visible;">
@@ -1534,9 +1526,6 @@ html, body {
     <div class="drawer-item" id="dmenu-tools" onclick="switchTab('tools')">
       <span class="drawer-icon">🛠️</span><span class="drawer-label">Tools</span><span class="drawer-arrow">›</span>
     </div>
-    <div class="drawer-item" id="dmenu-kpi" onclick="switchTab('kpi')">
-      <span class="drawer-icon">📊</span><span class="drawer-label">KPI Reference</span><span class="drawer-arrow">›</span>
-    </div>
     <div class="drawer-item" id="dmenu-requests" onclick="switchTab('requests')">
       <span class="drawer-icon">📋</span><span class="drawer-label">Employee Requests</span><span class="drawer-arrow">›</span>
     </div>
@@ -1626,6 +1615,11 @@ html, body {
       const curId = cur.id;
       if (curId === 'section-manager' && lvl < 3) switchTab('links');
       if (curId === 'section-admin'   && lvl < 4) switchTab('links');
+    }
+
+    // Pre-warm the Verification Portal in the background so it's instant on first click
+    if (lvl >= 3 && !mpState.loading && !mpState.data.length) {
+      setTimeout(() => { if (typeof mpLoad === 'function') mpLoad(); }, 400);
     }
   }
 
@@ -1900,7 +1894,6 @@ function initApp() {
   if (appInited) return;
   appInited = true;
   renderLinks();
-  renderKPIs();
   renderTools();
   setDate();
   fetchStores();
@@ -2007,17 +2000,6 @@ const LINKS = [
   { label:'Cash Deposit',   sub:'Brinks Reporting',    icon:'🔒', color:'red',    onclick:'openBrinks()' },
 ];
 
-const KPIS = [
-  { name:'CSGA',         target:'Target: MTD Pace',       desc:'Connected Smartphone Gross Adds. Measures new smartphone line activations. Your #1 volume driver — everything else is built on this.',                    tip:'Lead with upgrade promos + trade-in value. Ask every walk-in about their current device age.' },
-  { name:'BYOD',         target:'Target: By Store',       desc:'Bring Your Own Device activations — customers who bring their existing device to activate on Verizon. High margin, low friction.',                        tip:'Pitch during any plan change or port-in. BYOD + Perks combo increases attachment rate.' },
-  { name:'VHI',          target:'Target: Varies',         desc:'Verizon Home Internet activations. Broadband attach to existing mobile customers. Growing strategic priority for 2025+.',                                  tip:'Ask every mobile customer their ISP. Lead with price comparison vs cable.' },
-  { name:'Fios',         target:'Target: Market Specific',desc:'Fios Internet/TV activations. Higher-value broadband product in eligible markets. Treat every in-store visit as a home service opportunity.',              tip:'Check customer address on file. Fios-eligible zips = mandatory mention on every transaction.' },
-  { name:'Perks',        target:'Target: Attach Rate',    desc:'Verizon Perks (Disney+, Apple One, etc.) attached to new/existing plans. Pure margin — no cost of goods.',                                                tip:'Bundle Perks into every new line pitch. Use free trial framing — customers hate feeling sold to.' },
-  { name:'Premium Mix',  target:'Target: % of Gross',     desc:'Percentage of activations on premium unlimited plans (Ultimate, Plus). Higher ARPU = higher payout.',                                                     tip:'Always show the Premium plan first. Frame cost difference as $X/month, not total.' },
-  { name:'VMP',          target:'Target: Attach Rate',    desc:'Verizon Mobile Protect — device protection plan attach. Recurring revenue + customer retention tool.',                                                    tip:'Never present as optional. Lead with "when your screen breaks" not "if." Show repair cost vs monthly.' },
-  { name:'Pull Through', target:'Target: Per Activation', desc:'Accessories and add-ons sold per activation. Cases, chargers, screen protectors — direct gross profit.',                                                  tip:'Set a floor: every activation gets a case conversation. Use a physical product in hand during close.' },
-];
-
 function copyStoreAddress(btn) {
   const address = btn.dataset.address;
   navigator.clipboard.writeText(address).then(() => {
@@ -2047,6 +2029,7 @@ function renderStores(list) {
       <div class="store-meta">
         <div class="store-meta-row"><span class="meta-icon">📍</span><span class="meta-text">${s.address||''}</span></div>
         <div class="store-meta-row"><span class="meta-icon">📞</span><span class="meta-text">${s.phone||''}</span></div>
+        ${(()=>{ const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||''; return dcwp ? `<div class="store-meta-row"><span class="meta-icon">🏛️</span><span class="meta-text" style="font-size:11px;color:var(--muted);">DCWP #${dcwp}</span></div>` : ''; })()}
       </div>
       <div class="store-actions">
         <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
@@ -2068,15 +2051,6 @@ function renderLinks() {
   }).join('');
 }
 
-function renderKPIs() {
-  document.getElementById('kpi-grid').innerHTML = KPIS.map(k => `
-    <div class="kpi-card">
-      <div class="kpi-top"><div class="kpi-name">${k.name}</div><div class="kpi-target">${k.target}</div></div>
-      <div class="kpi-desc">${k.desc}</div>
-      <div class="kpi-tip"><div class="kpi-tip-label">⚡ Floor Tip</div>${k.tip}</div>
-    </div>
-  `).join('');
-}
 
 function renderTools() {
   document.getElementById('tools-grid').innerHTML = TOOLS.map(t => {
@@ -2488,7 +2462,13 @@ let mpState = {
 };
 
 // ── Fetch submissions from Apps Script ────────────────────────────────────────
-async function mpLoad() {
+// force=true → always re-fetch (Refresh button). force=false/omitted → skip if data already loaded.
+async function mpLoad(force) {
+  // Already have fresh data and not forced — just render what we have
+  if (!force && !mpState.loading && mpState.data.length && !mpState.error) {
+    mpRender();
+    return;
+  }
   mpState.loading = true;
   mpState.error   = null;
   mpRender();
@@ -2511,9 +2491,7 @@ async function mpLoad() {
     mpState.error   = err.message;
     mpState.loading = false;
   }
-  // Force render after browser paint cycle
   mpRender();
-  requestAnimationFrame(() => requestAnimationFrame(() => mpRender()));
 }
 
 // ── Write status update back to sheet ─────────────────────────────────────────
@@ -2528,18 +2506,33 @@ async function mpSaveStatus(id, status, note) {
     });
     const json = await res.json();
     if (json.status !== 'ok') throw new Error(json.error || 'Save failed');
-    // update local state
-    mpState.data = mpState.data.map(r => r.id === id ? { ...r, status, managerNote:note, reviewedBy:'Manager', reviewDate:new Date().toLocaleDateString() } : r);
+    // Snapshot queue position BEFORE mutating data so we can find the right next item
+    const queueBefore   = mpQueue();
+    const currentIdx    = queueBefore.findIndex(r => r.id === id);
+    // Update local state
+    mpState.data = mpState.data.map(r => r.id === id
+      ? { ...r, status, managerNote:note, reviewedBy:'Manager', reviewDate:new Date().toLocaleDateString() }
+      : r);
     if (mpState.selected && mpState.selected.id === id) {
       mpState.selected = { ...mpState.selected, status, managerNote:note };
-      // auto-close detail after archiving
-      if (status === 'verified' || status === 'rejected') {
-        mpState.justActed = status;
-        setTimeout(() => { mpState.selected = null; mpState.justActed = null; mpRender(); }, 1200);
-      } else {
-        mpState.justActed = status;
-        setTimeout(() => { mpState.justActed = null; mpRender(); }, 1500);
-      }
+      mpState.justActed = status;
+      // Auto-advance to next device after brief confirmation flash
+      setTimeout(() => {
+        mpState.justActed = null;
+        const newQueue = mpQueue();   // re-evaluated after data mutation
+        if (newQueue.length > 0) {
+          // For verified/rejected the current item left the queue, so the item
+          // that was one position ahead slides into the same slot.
+          const nextIdx = Math.min(currentIdx, newQueue.length - 1);
+          mpState.selected  = newQueue[nextIdx] || newQueue[0];
+          mpState.noteInput = mpState.selected.managerNote || '';
+        } else {
+          // Queue exhausted — return to list
+          mpState.selected  = null;
+          mpState.noteInput = '';
+        }
+        mpRender();
+      }, 700);
     }
   } catch (err) {
     alert('Save failed: ' + err.message);
@@ -2822,7 +2815,7 @@ function mpRender() {
           <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
           <div style="font-weight:700;margin-bottom:6px;">Could not load submissions</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${mpState.error}</div>
-          <button onclick="mpLoad()" style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Retry</button>
+          <button onclick="mpLoad(true)" style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Retry</button>
         </div>
       </div>
     </div>`;
@@ -2844,7 +2837,7 @@ function mpRender() {
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         ${qCount > 0 ? `<span style="background:#fff0f0;border:1px solid #f5c2c2;color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">${qCount} need action</span>` : ''}
-        <button onclick="mpLoad()" title="Refresh" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:14px;font-family:inherit;" ${mpState.loading?'disabled':''}>↻</button>
+        <button onclick="mpLoad(true)" title="Refresh" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:14px;font-family:inherit;" ${mpState.loading?'disabled':''}>↻</button>
       </div>
     </div>
     <div class="mp-tabs">
