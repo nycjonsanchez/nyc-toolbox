@@ -10,6 +10,8 @@
 
 <link rel="manifest" href="/nyc-toolbox/manifest.json" />
 <link rel="apple-touch-icon" href="/nyc-toolbox/icon-192.png" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <meta name="apple-mobile-web-app-title" content="NY Connection" />
@@ -409,15 +411,48 @@ html, body {
 }
 .search-wrap { padding: 0 20px 12px; display: flex; gap: 8px; align-items: center; }
 .search-wrap .search-input { flex: 1; margin: 0; }
-.near-me-btn {
-  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
-  padding: 9px 13px; border-radius: 10px;
-  border: 1px solid var(--border); background: var(--surface);
-  color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer;
-  transition: all .2s; white-space: nowrap;
+/* Store controls row */
+.store-controls { display: flex; align-items: center; gap: 8px; padding: 0 20px 12px; }
+.view-toggle {
+  display: flex; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; flex-shrink: 0;
 }
-.near-me-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
-.near-me-btn:active { transform: scale(.96); }
+.view-toggle-btn {
+  padding: 7px 13px; font-size: 12px; font-weight: 600;
+  border: none; background: none; color: var(--muted); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.view-toggle-btn.active { background: var(--red); color: #fff; }
+.store-sort-select {
+  padding: 7px 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 12px; font-weight: 600;
+  cursor: pointer; outline: none; font-family: 'Inter', sans-serif; flex-shrink: 0;
+  appearance: none; -webkit-appearance: none; padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+/* Map */
+.store-map-wrap { padding: 0 20px 20px; display: none; }
+.store-map-wrap.visible { display: block; }
+#store-map { height: 480px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+.map-loading {
+  height: 480px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  color: var(--muted); font-size: 13px;
+}
+.map-loading-bar {
+  width: 160px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.map-loading-fill {
+  height: 100%; background: var(--red); border-radius: 2px;
+  transition: width .3s; width: 0%;
+}
+/* Borough group headers in list */
+.borough-group-header {
+  padding: 14px 20px 6px; font-size: 10px; font-weight: 800;
+  letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted);
+}
 
 .link-grid { padding: 0 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (min-width: 480px) { .link-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -1022,9 +1057,22 @@ html, body {
     </div>
     <div class="search-wrap">
       <input class="search-input" id="store-search" placeholder="Search store or manager..." oninput="filterStores()" />
-      <button class="near-me-btn" id="nearMeBtn" onclick="geoSortStores()">📍 Near Me</button>
+    </div>
+    <div class="store-controls">
+      <div class="view-toggle">
+        <button class="view-toggle-btn active" id="viewBtnList" onclick="setStoreView('list')">☰ List</button>
+        <button class="view-toggle-btn" id="viewBtnMap" onclick="setStoreView('map')">🗺️ Map</button>
+      </div>
+      <select class="store-sort-select" id="storeSortSelect" onchange="setStoreSort(this.value)">
+        <option value="az">↑ A – Z</option>
+        <option value="borough">🗂 Borough</option>
+        <option value="near">📍 Near Me</option>
+      </select>
     </div>
     <div class="store-list" id="store-list"></div>
+    <div class="store-map-wrap" id="store-map-wrap">
+      <div id="store-map"></div>
+    </div>
   </div>
 
   <div class="section active" id="section-links">
@@ -1957,7 +2005,7 @@ async function fetchStores(forceRefresh = false) {
   const cached = loadStoreCache();
   if (cached && !forceRefresh) {
     storeData = cached.data;
-    renderStores(storeData);
+    applyStoreSort();
     dot.className = 'sync-status-dot ok';
     const cachedTime = new Date(cached.ts);
     label.textContent = `Cached ${cachedTime.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})} · refreshing…`;
@@ -1975,7 +2023,7 @@ async function fetchStores(forceRefresh = false) {
     const data = await res.json();
     storeData  = data.filter(s => s['name Non-WZ'] || s.name);
     saveStoreCache(storeData);
-    renderStores(storeData);
+    applyStoreSort();
     dot.className = 'sync-status-dot ok';
     const now = new Date();
     label.textContent = `Synced ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
@@ -1998,14 +2046,9 @@ async function fetchStores(forceRefresh = false) {
 }
 
 function filterStores() {
-  const q = document.getElementById('store-search').value.toLowerCase();
-  if (!q) { renderStores(storeData); return; }
-  renderStores(storeData.filter(s =>
-    (s['name Non-WZ'] ||s.name  ||'').toLowerCase().includes(q) ||
-    (s.address        ||'').toLowerCase().includes(q) ||
-    (s.phone          ||'').toLowerCase().includes(q) ||
-    (s['Store id']    ||'').toString().toLowerCase().includes(q)
-  ));
+  applyStoreSort();
+  // If map is open, also filter pins
+  if (storeCurrentView === 'map') filterMapPins();
 }
 
 const TOOLS = [
@@ -2043,40 +2086,57 @@ function copyStoreAddress(btn) {
   });
 }
 
-function renderStores(list) {
-  document.getElementById('store-count').textContent = `${list.length} STORES`;
-  document.getElementById('store-list').innerHTML = list.map(s => {
-    const nm  = s['name Non-WZ'] || s.name || '';
-    const sid = s['Store id'] || '';
-    const ph  = (s.phone || '').replace(/\D/g, '');
-    const addr = encodeURIComponent(s.address || '');
-    const copyText = (nm + (sid ? ' (' + sid + ')' : '') + ' – ' + (s.address || '')).replace(/"/g, '&quot;');
-    const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||'';
-    const distBadge = (s._dist !== undefined && s._dist !== Infinity)
-      ? `<span class="store-dist-badge">${s._dist < 10 ? s._dist.toFixed(1) : Math.round(s._dist)} mi</span>` : '';
-    return `
-    <div class="store-card">
-      <div class="store-card-header">
-        <div class="store-name">${nm}${sid ? ' · ' + sid : ''}${distBadge}</div>
-        <div class="store-actions">
-          <a class="store-icon-btn" href="tel:${ph}" title="Call">📞</a>
-          <a class="store-icon-btn map-btn" href="https://maps.google.com/?q=${addr}" target="_blank" title="Map">🗺️</a>
-          <button class="store-icon-btn copy-addr-btn" data-address="${copyText}" onclick="copyStoreAddress(this)" title="Copy address">📋</button>
-        </div>
-      </div>
-      <div class="store-meta">
-        <div class="store-meta-row"><span class="meta-icon">📍</span><span class="meta-text">${s.address||''}</span></div>
-        <div class="store-meta-row"><span class="meta-icon">📞</span><span class="meta-text">${s.phone||''}</span></div>
-        ${dcwp ? `<div class="store-meta-row"><span class="meta-icon">🏛️</span><span class="meta-text" style="font-size:11px;color:var(--muted);">DCWP #${dcwp}</span></div>` : ''}
+function storeCardHTML(s) {
+  const nm  = s['name Non-WZ'] || s.name || '';
+  const sid = s['Store id'] || '';
+  const ph  = (s.phone || '').replace(/\D/g, '');
+  const addr = encodeURIComponent(s.address || '');
+  const copyText = (nm + (sid ? ' (' + sid + ')' : '') + ' – ' + (s.address || '')).replace(/"/g, '&quot;');
+  const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||'';
+  const distBadge = (s._dist !== undefined && s._dist !== Infinity)
+    ? `<span class="store-dist-badge">${s._dist < 10 ? s._dist.toFixed(1) : Math.round(s._dist)} mi</span>` : '';
+  return `
+  <div class="store-card">
+    <div class="store-card-header">
+      <div class="store-name">${nm}${sid ? ' · ' + sid : ''}${distBadge}</div>
+      <div class="store-actions">
+        <a class="store-icon-btn" href="tel:${ph}" title="Call">📞</a>
+        <a class="store-icon-btn map-btn" href="https://maps.google.com/?q=${addr}" target="_blank" title="Map">🗺️</a>
+        <button class="store-icon-btn copy-addr-btn" data-address="${copyText}" onclick="copyStoreAddress(this)" title="Copy address">📋</button>
       </div>
     </div>
-  `;}).join('');
+    <div class="store-meta">
+      <div class="store-meta-row"><span class="meta-icon">📍</span><span class="meta-text">${s.address||''}</span></div>
+      <div class="store-meta-row"><span class="meta-icon">📞</span><span class="meta-text">${s.phone||''}</span></div>
+      ${dcwp ? `<div class="store-meta-row"><span class="meta-icon">🏛️</span><span class="meta-text" style="font-size:11px;color:var(--muted);">DCWP #${dcwp}</span></div>` : ''}
+    </div>
+  </div>`;
 }
 
-// ── NEAR ME / GEO SORT ───────────────────────────────────────────────────────
+function renderStores(list) {
+  document.getElementById('store-count').textContent = `${list.length} STORES`;
+  document.getElementById('store-list').innerHTML = list.map(storeCardHTML).join('');
+}
+
+function filterMapPins() {
+  if (!storeLeafletMap || !storeMapPins.length) return;
+  const q = (document.getElementById('store-search')?.value || '').toLowerCase();
+  storeMapPins.forEach(({marker, store}) => {
+    const nm = (store['name Non-WZ']||store.name||'').toLowerCase();
+    const match = !q || nm.includes(q) || (store.address||'').toLowerCase().includes(q) || (store['Store id']||'').toLowerCase().includes(q);
+    if (match) { if (!storeLeafletMap.hasLayer(marker)) storeLeafletMap.addLayer(marker); }
+    else        { storeLeafletMap.removeLayer(marker); }
+  });
+}
+
+// ── STORE VIEW / SORT / MAP ──────────────────────────────────────────────────
 let storeGeoCache = {};
-let storesSortedByDist = false;
-const GEO_CACHE_KEY = 'storeGeoCache_v2';
+let storeCurrentView = 'list';   // 'list' | 'map'
+let storeCurrentSort = 'az';     // 'az' | 'borough' | 'near'
+let storeUserCoords  = null;
+let storeLeafletMap  = null;
+let storeMapPins     = [];
+const GEO_CACHE_KEY  = 'storeGeoCache_v2';
 
 function loadGeoCache() {
   try {
@@ -2088,74 +2148,199 @@ function saveGeoCache() {
   try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: storeGeoCache })); } catch(e) {}
 }
 function haversine(lat1, lng1, lat2, lng2) {
-  const R = 3958.8, toRad = x => x * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const R = 3958.8, r = x => x * Math.PI / 180;
+  const a = Math.sin(r(lat2-lat1)/2)**2 + Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(r(lng2-lng1)/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 async function geocodeAddress(address) {
   if (storeGeoCache[address]) return storeGeoCache[address];
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`;
-    const res = await fetch(url, { headers: { 'User-Agent': 'NYC-Toolbox/1.0' } });
+    const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`, { headers: {'User-Agent':'NYC-Toolbox/1.0'} });
     const json = await res.json();
-    if (json.length) {
-      const coords = { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) };
-      storeGeoCache[address] = coords;
-      return coords;
-    }
+    if (json.length) { const c = {lat:parseFloat(json[0].lat),lng:parseFloat(json[0].lon)}; storeGeoCache[address]=c; return c; }
   } catch(e) {}
   return null;
 }
-async function geoSortStores() {
-  const btn = document.getElementById('nearMeBtn');
-  // Toggle off
-  if (storesSortedByDist) {
-    storesSortedByDist = false;
-    storeData.forEach(s => delete s._dist);
-    btn.classList.remove('active');
-    btn.textContent = '📍 Near Me';
-    renderStores(storeData);
-    return;
-  }
-  btn.textContent = '⏳ Locating…';
-  btn.disabled = true;
-  // Get user coords
-  let userCoords;
-  try {
-    userCoords = await new Promise((res, rej) =>
-      navigator.geolocation.getCurrentPosition(
-        p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        rej, { timeout: 10000 }
-      )
-    );
-  } catch(e) {
-    btn.textContent = '📍 Near Me';
-    btn.disabled = false;
-    alert('Location access denied or unavailable.');
-    return;
-  }
+async function geocodeAll(onProgress) {
   loadGeoCache();
-  // Geocode uncached stores (Nominatim rate limit: 1 req/s)
   const uncached = storeData.filter(s => s.address && !storeGeoCache[s.address]);
   for (let i = 0; i < uncached.length; i++) {
-    btn.textContent = `⏳ ${i + 1}/${uncached.length}`;
     await geocodeAddress(uncached[i].address);
+    onProgress && onProgress(i + 1, uncached.length);
     if (i < uncached.length - 1) await new Promise(r => setTimeout(r, 320));
   }
   if (uncached.length) saveGeoCache();
-  // Assign distances & sort
-  storeData.forEach(s => {
-    const c = storeGeoCache[s.address];
-    s._dist = c ? haversine(userCoords.lat, userCoords.lng, c.lat, c.lng) : Infinity;
-  });
-  storeData.sort((a, b) => a._dist - b._dist);
-  storesSortedByDist = true;
-  btn.classList.add('active');
-  btn.textContent = '📍 Near Me ✓';
-  btn.disabled = false;
-  renderStores(storeData);
 }
+
+// ── View toggle ──────────────────────────────────────────────────────────────
+function setStoreView(view) {
+  storeCurrentView = view;
+  document.getElementById('viewBtnList').classList.toggle('active', view === 'list');
+  document.getElementById('viewBtnMap').classList.toggle('active',  view === 'map');
+  document.getElementById('store-list').style.display    = view === 'list' ? '' : 'none';
+  const mapWrap = document.getElementById('store-map-wrap');
+  if (view === 'map') { mapWrap.classList.add('visible'); initStoreMap(); }
+  else                { mapWrap.classList.remove('visible'); }
+}
+
+// ── Sort ─────────────────────────────────────────────────────────────────────
+async function setStoreSort(val) {
+  storeCurrentSort = val;
+  const sel = document.getElementById('storeSortSelect');
+  if (val === 'near') {
+    sel.disabled = true;
+    // Get user location
+    if (!storeUserCoords) {
+      try {
+        storeUserCoords = await new Promise((res, rej) =>
+          navigator.geolocation.getCurrentPosition(p => res({lat:p.coords.latitude,lng:p.coords.longitude}), rej, {timeout:10000})
+        );
+      } catch(e) {
+        alert('Location access denied or unavailable.');
+        storeCurrentSort = 'az';
+        sel.value = 'az';
+        sel.disabled = false;
+        return;
+      }
+    }
+    // Geocode all, show progress in select label
+    await geocodeAll((done, total) => { sel.options[2].text = `⏳ ${done}/${total}`; });
+    sel.options[2].text = '📍 Near Me ✓';
+    sel.disabled = false;
+    // Assign distances
+    storeData.forEach(s => {
+      const c = storeGeoCache[s.address];
+      s._dist = c ? haversine(storeUserCoords.lat, storeUserCoords.lng, c.lat, c.lng) : Infinity;
+    });
+  }
+  applyStoreSort();
+}
+
+function getBoroughOrder(name) {
+  const n = (name||'').toLowerCase();
+  if (n.includes('manhattan') || n.includes('new york ny')) return 0;
+  if (n.includes('bronx'))   return 1;
+  if (n.includes('brooklyn'))return 2;
+  if (n.includes('queens'))  return 3;
+  if (n.includes('staten'))  return 4;
+  return 5; // Long Island / other
+}
+function getBorough(name) {
+  const n = (name||'').toLowerCase();
+  if (n.includes('manhattan') || n.includes('new york ny')) return 'Manhattan';
+  if (n.includes('bronx'))   return 'Bronx';
+  if (n.includes('brooklyn'))return 'Brooklyn';
+  if (n.includes('queens'))  return 'Queens';
+  if (n.includes('staten'))  return 'Staten Island';
+  return 'Long Island & Other';
+}
+
+function applyStoreSort() {
+  const q = (document.getElementById('store-search')?.value || '').toLowerCase().trim();
+  let list = q
+    ? storeData.filter(s => {
+        const nm = (s['name Non-WZ']||s.name||'').toLowerCase();
+        return nm.includes(q) || (s.address||'').toLowerCase().includes(q) || (s['Store id']||'').toLowerCase().includes(q);
+      })
+    : [...storeData];
+
+  if (storeCurrentSort === 'az') {
+    list.sort((a,b) => (a['name Non-WZ']||a.name||'').localeCompare(b['name Non-WZ']||b.name||''));
+    renderStores(list);
+  } else if (storeCurrentSort === 'near') {
+    list.sort((a,b) => (a._dist||Infinity) - (b._dist||Infinity));
+    renderStores(list);
+  } else if (storeCurrentSort === 'borough') {
+    list.sort((a,b) => {
+      const na = a['name Non-WZ']||a.name||'', nb = b['name Non-WZ']||b.name||'';
+      return getBoroughOrder(na) - getBoroughOrder(nb) || na.localeCompare(nb);
+    });
+    renderStoresByBorough(list);
+  }
+}
+
+function renderStoresByBorough(list) {
+  document.getElementById('store-count').textContent = `${list.length} STORES`;
+  let html = '';
+  let lastBorough = null;
+  list.forEach(s => {
+    const nm = s['name Non-WZ']||s.name||'';
+    const b  = getBorough(nm);
+    if (b !== lastBorough) {
+      html += `<div class="borough-group-header">${b}</div>`;
+      lastBorough = b;
+    }
+    html += storeCardHTML(s);
+  });
+  document.getElementById('store-list').innerHTML = html;
+}
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+async function initStoreMap() {
+  const mapEl = document.getElementById('store-map');
+  if (!mapEl) return;
+
+  // Show loading state
+  mapEl.innerHTML = `<div class="map-loading"><div style="font-size:24px">🗺️</div><div>Loading map…</div><div class="map-loading-bar"><div class="map-loading-fill" id="mapLoadFill"></div></div><div id="mapLoadLabel" style="font-size:11px">Geocoding stores…</div></div>`;
+
+  // Geocode all stores
+  await geocodeAll((done, total) => {
+    const pct = Math.round(done / total * 100);
+    const fill = document.getElementById('mapLoadFill');
+    const lbl  = document.getElementById('mapLoadLabel');
+    if (fill) fill.style.width = pct + '%';
+    if (lbl)  lbl.textContent = `${done} / ${total} stores located`;
+  });
+
+  // Clear loading and init Leaflet
+  mapEl.innerHTML = '';
+  if (storeLeafletMap) { storeLeafletMap.remove(); storeLeafletMap = null; }
+
+  const map = L.map(mapEl, { zoomControl: true, scrollWheelZoom: true });
+  storeLeafletMap = map;
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Custom red pin icon
+  const pinIcon = L.divIcon({
+    className: '',
+    html: `<svg width="24" height="34" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12c0 9 12 22 12 22s12-13 12-22C24 5.373 18.627 0 12 0z" fill="#c41e3a" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>`,
+    iconSize: [24, 34], iconAnchor: [12, 34], popupAnchor: [0, -36]
+  });
+
+  const bounds = [];
+  storeMapPins = [];
+
+  storeData.forEach(s => {
+    const coords = storeGeoCache[s.address];
+    if (!coords) return;
+    const nm  = s['name Non-WZ']||s.name||'';
+    const sid = s['Store id']||'';
+    const ph  = (s.phone||'').replace(/\D/g,'');
+    const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||'';
+    const popup = `
+      <div style="font-family:'Inter',sans-serif;min-width:180px;padding:4px 2px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">${nm}${sid?' · '+sid:''}</div>
+        <div style="font-size:11px;color:#666;margin-bottom:2px">📍 ${s.address||''}</div>
+        <div style="font-size:11px;color:#666;margin-bottom:${dcwp?'2':'8'}px">📞 ${s.phone||''}</div>
+        ${dcwp?`<div style="font-size:10px;color:#888;margin-bottom:8px">🏛️ DCWP #${dcwp}</div>`:''}
+        <div style="display:flex;gap:6px">
+          <a href="tel:${ph}" style="flex:1;padding:5px 0;background:#c41e3a;color:#fff;border-radius:6px;text-align:center;font-size:11px;font-weight:600;text-decoration:none">📞 Call</a>
+          <a href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank" style="flex:1;padding:5px 0;background:#1a73e8;color:#fff;border-radius:6px;text-align:center;font-size:11px;font-weight:600;text-decoration:none">🗺️ Nav</a>
+        </div>
+      </div>`;
+    const marker = L.marker([coords.lat, coords.lng], {icon: pinIcon}).addTo(map).bindPopup(popup, {maxWidth: 220});
+    storeMapPins.push({marker, store: s});
+    bounds.push([coords.lat, coords.lng]);
+  });
+
+  if (bounds.length) map.fitBounds(bounds, {padding: [24, 24]});
+}
+
+// ── Unified filter (called by search input) ───────────────────────────────────
 
 function renderLinks() {
   document.getElementById('link-grid').innerHTML = LINKS.map(l => {
