@@ -363,28 +363,28 @@ html, body {
 
 .search-wrap { padding: 0 20px 16px; }
 .search-input {
-  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  width: 100%; min-width: 0; background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 10px 14px; color: var(--text);
   font-family: 'Inter', sans-serif; font-size: 14px; outline: none;
 }
 .search-input::placeholder { color: var(--muted); }
 .search-input:focus { border-color: var(--red); }
 
-.store-list { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+.store-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
 .store-card {
   background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-  padding: 16px; cursor: pointer;
+  padding: 12px 14px; cursor: pointer;
   transition: border-color .2s, transform .15s; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 .store-card:active { transform: scale(.985); }
 .store-card:hover { border-color: var(--red); }
-.store-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.store-name { font-weight: 700; font-size: 15px; line-height: 1.2; color: var(--text); }
-.store-meta { display: flex; flex-direction: column; gap: 4px; }
+.store-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.store-name { font-weight: 700; font-size: 14px; line-height: 1.3; color: var(--text); }
+.store-meta { display: flex; flex-direction: column; gap: 3px; }
 .store-meta-row { display: flex; gap: 6px; align-items: center; }
 .meta-icon { font-size: 12px; }
 .meta-text { font-size: 12px; color: var(--muted); }
-.store-actions { display: flex; gap: 8px; margin-top: 12px; }
+.store-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 10px; }
 .store-btn {
   flex: 1; padding: 8px; border-radius: 8px;
   border: 1px solid var(--border); background: var(--surface);
@@ -393,6 +393,31 @@ html, body {
 }
 .store-btn:active { background: var(--border); }
 .store-btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+.store-icon-btn {
+  width: 36px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer; text-decoration: none; line-height: 1;
+  transition: background .15s, transform .1s; color: var(--text);
+}
+.store-icon-btn:active { transform: scale(.88); background: var(--border); }
+.store-icon-btn.map-btn { background: var(--red); border-color: var(--red); }
+.store-dist-badge {
+  font-size: 10px; font-weight: 700; color: var(--red);
+  background: rgba(196,30,58,.1); border-radius: 20px;
+  padding: 2px 7px; margin-left: 5px; white-space: nowrap;
+}
+.search-wrap { padding: 0 20px 12px; display: flex; gap: 8px; align-items: center; }
+.search-wrap .search-input { flex: 1; margin: 0; }
+.near-me-btn {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 9px 13px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all .2s; white-space: nowrap;
+}
+.near-me-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+.near-me-btn:active { transform: scale(.96); }
 
 .link-grid { padding: 0 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (min-width: 480px) { .link-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -997,6 +1022,7 @@ html, body {
     </div>
     <div class="search-wrap">
       <input class="search-input" id="store-search" placeholder="Search store or manager..." oninput="filterStores()" />
+      <button class="near-me-btn" id="nearMeBtn" onclick="geoSortStores()">📍 Near Me</button>
     </div>
     <div class="store-list" id="store-list"></div>
   </div>
@@ -2020,24 +2046,115 @@ function copyStoreAddress(btn) {
 function renderStores(list) {
   document.getElementById('store-count').textContent = `${list.length} STORES`;
   document.getElementById('store-list').innerHTML = list.map(s => {
-    const nm = s['name Non-WZ'] || s.name || '';
+    const nm  = s['name Non-WZ'] || s.name || '';
+    const sid = s['Store id'] || '';
+    const ph  = (s.phone || '').replace(/\D/g, '');
+    const addr = encodeURIComponent(s.address || '');
+    const copyText = (nm + (sid ? ' (' + sid + ')' : '') + ' – ' + (s.address || '')).replace(/"/g, '&quot;');
+    const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||'';
+    const distBadge = (s._dist !== undefined && s._dist !== Infinity)
+      ? `<span class="store-dist-badge">${s._dist < 10 ? s._dist.toFixed(1) : Math.round(s._dist)} mi</span>` : '';
     return `
     <div class="store-card">
       <div class="store-card-header">
-        <div class="store-name">${nm}${s['Store id']?' · '+s['Store id']:''}</div>
+        <div class="store-name">${nm}${sid ? ' · ' + sid : ''}${distBadge}</div>
+        <div class="store-actions">
+          <a class="store-icon-btn" href="tel:${ph}" title="Call">📞</a>
+          <a class="store-icon-btn map-btn" href="https://maps.google.com/?q=${addr}" target="_blank" title="Map">🗺️</a>
+          <button class="store-icon-btn copy-addr-btn" data-address="${copyText}" onclick="copyStoreAddress(this)" title="Copy address">📋</button>
+        </div>
       </div>
       <div class="store-meta">
         <div class="store-meta-row"><span class="meta-icon">📍</span><span class="meta-text">${s.address||''}</span></div>
         <div class="store-meta-row"><span class="meta-icon">📞</span><span class="meta-text">${s.phone||''}</span></div>
-        ${(()=>{ const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||''; return dcwp ? `<div class="store-meta-row"><span class="meta-icon">🏛️</span><span class="meta-text" style="font-size:11px;color:var(--muted);">DCWP #${dcwp}</span></div>` : ''; })()}
-      </div>
-      <div class="store-actions">
-        <a class="store-btn" href="tel:${(s.phone||'').replace(/\D/g,'')}">📞 Call</a>
-        <a class="store-btn primary" href="https://maps.google.com/?q=${encodeURIComponent(s.address||'')}" target="_blank">🗺 Map</a>
-        <button class="store-btn copy-addr-btn" data-address="${(nm+(s['Store id']?' ('+s['Store id']+')':'')+' – '+(s.address||'')).replace(/"/g,'&quot;')}" onclick="copyStoreAddress(this)">📋 Copy</button>
+        ${dcwp ? `<div class="store-meta-row"><span class="meta-icon">🏛️</span><span class="meta-text" style="font-size:11px;color:var(--muted);">DCWP #${dcwp}</span></div>` : ''}
       </div>
     </div>
   `;}).join('');
+}
+
+// ── NEAR ME / GEO SORT ───────────────────────────────────────────────────────
+let storeGeoCache = {};
+let storesSortedByDist = false;
+const GEO_CACHE_KEY = 'storeGeoCache_v2';
+
+function loadGeoCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}');
+    storeGeoCache = (Date.now() - (c.ts || 0) < 30 * 24 * 3600 * 1000) ? (c.data || {}) : {};
+  } catch(e) { storeGeoCache = {}; }
+}
+function saveGeoCache() {
+  try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: storeGeoCache })); } catch(e) {}
+}
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 3958.8, toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+async function geocodeAddress(address) {
+  if (storeGeoCache[address]) return storeGeoCache[address];
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'NYC-Toolbox/1.0' } });
+    const json = await res.json();
+    if (json.length) {
+      const coords = { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) };
+      storeGeoCache[address] = coords;
+      return coords;
+    }
+  } catch(e) {}
+  return null;
+}
+async function geoSortStores() {
+  const btn = document.getElementById('nearMeBtn');
+  // Toggle off
+  if (storesSortedByDist) {
+    storesSortedByDist = false;
+    storeData.forEach(s => delete s._dist);
+    btn.classList.remove('active');
+    btn.textContent = '📍 Near Me';
+    renderStores(storeData);
+    return;
+  }
+  btn.textContent = '⏳ Locating…';
+  btn.disabled = true;
+  // Get user coords
+  let userCoords;
+  try {
+    userCoords = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(
+        p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        rej, { timeout: 10000 }
+      )
+    );
+  } catch(e) {
+    btn.textContent = '📍 Near Me';
+    btn.disabled = false;
+    alert('Location access denied or unavailable.');
+    return;
+  }
+  loadGeoCache();
+  // Geocode uncached stores (Nominatim rate limit: 1 req/s)
+  const uncached = storeData.filter(s => s.address && !storeGeoCache[s.address]);
+  for (let i = 0; i < uncached.length; i++) {
+    btn.textContent = `⏳ ${i + 1}/${uncached.length}`;
+    await geocodeAddress(uncached[i].address);
+    if (i < uncached.length - 1) await new Promise(r => setTimeout(r, 320));
+  }
+  if (uncached.length) saveGeoCache();
+  // Assign distances & sort
+  storeData.forEach(s => {
+    const c = storeGeoCache[s.address];
+    s._dist = c ? haversine(userCoords.lat, userCoords.lng, c.lat, c.lng) : Infinity;
+  });
+  storeData.sort((a, b) => a._dist - b._dist);
+  storesSortedByDist = true;
+  btn.classList.add('active');
+  btn.textContent = '📍 Near Me ✓';
+  btn.disabled = false;
+  renderStores(storeData);
 }
 
 function renderLinks() {
