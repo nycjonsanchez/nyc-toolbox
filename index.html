@@ -2130,7 +2130,10 @@ function filterMapPins() {
 }
 
 // ── STORE VIEW / SORT / MAP ──────────────────────────────────────────────────
-let storeGeoCache = {};
+// Pre-geocoded coordinates — map opens instantly, zero API calls needed
+const STORE_COORDS = {"748 Suffolk Ave, Brentwood, NY 11717-4401":{"lat":40.7806756,"lng":-73.2478321},"6818 18th Ave, Brooklyn, NY 11204-4415":{"lat":40.6171461,"lng":-73.9924814},"3069 Brighton 5th St, Brooklyn, NY 11235-6407":{"lat":40.5778451,"lng":-73.962289},"419 Court St, Brooklyn, NY 11231-5814":{"lat":40.6789663,"lng":-73.9973671},"956 Flatbush Ave, Brooklyn, NY 11226-4018":{"lat":40.6480626,"lng":-73.9584932},"14 Hillel Pl, Brooklyn, NY 11210-2923":{"lat":40.6323765,"lng":-73.9481781},"1201 Liberty Ave, Brooklyn, NY 11208-3411":{"lat":40.6791651,"lng":-73.8650409},"2042 Rockaway Pkwy Unit B, Brooklyn, NY 11236-5602":{"lat":40.6333646,"lng":-73.889348},"900 Montauk Hwy, Copiague, NY 11726-4901":{"lat":40.6691923,"lng":-73.3920688},"60 Park Pl, East Hampton, NY 11937-2407":{"lat":40.9639798,"lng":-72.1873536},"207 Airport Plaza Blvd, Farmingdale, NY 11735-3934":{"lat":40.7391922,"lng":-73.4192296},"28 Hempstead Tpke Ste C, Farmingdale, NY 11735-2046":{"lat":40.7295433,"lng":-73.4619658},"38 E Montauk Hwy, Hampton Bays, NY 11946-1817":{"lat":40.8849538,"lng":-72.4959708},"1748 Veterans Hwy Unit 1754, Islandia, NY 11749-1542":{"lat":40.8072391,"lng":-73.1832695},"624 Wellwood Ave, Lindenhurst, NY 11757-1671":{"lat":40.7012285,"lng":-73.3838626},"249 Pine Hollow Rd, Oyster Bay, NY 11771-4707":{"lat":40.858515,"lng":-73.5347572},"74 E Main St #11A, Smithtown, NY 11787-2804":{"lat":40.8555822,"lng":-73.1917988},"69 Main St, Southampton, NY 11968-4808":{"lat":40.8876377,"lng":-72.3900985},"2034 Green Acres Mall Spc 2203B, Valley Stream, NY 11581-1545":{"lat":40.66318,"lng":-73.7186649},"743 Sunrise Hwy, West Babylon, NY 11704-6004":{"lat":40.7140608,"lng":-73.3408278},"740 Main St Ste 4, Great Barrington, MA 01230":{"lat":42.19071,"lng":-73.3649481},"555 Hubbard Ave, Pittsfield, MA 01201-3876":{"lat":42.4686287,"lng":-73.1987359},"327 Chimney Rock Rd, Bound Brook, NJ 08805-1171":{"lat":40.5772701,"lng":-74.5612937},"64 W 225th St, Bronx, NY 10463-7002":{"lat":40.873343,"lng":-73.9068586},"2899 3rd Ave, Bronx, NY 10455-2628":{"lat":40.8171341,"lng":-73.9164788},"940 Southern Blvd, Bronx, NY 10459-3794":{"lat":40.8215938,"lng":-73.8914631},"2169 White Plains Rd, Bronx, NY 10462-1405":{"lat":40.8557061,"lng":-73.8678629},"45 Quaker Ave Ste 100, Cornwall, NY 12518-2146":{"lat":41.4337302,"lng":-74.0392197},"264 Plaza Rd, Kingston, NY 12401-2973":{"lat":41.9375207,"lng":-74.0179646},"125 Hawkins Dr, Montgomery, NY 12549-2626":{"lat":41.5112962,"lng":-74.2104462},"39 N Plank Rd Ste 15, Newburgh, NY 12550-2117":{"lat":41.5205472,"lng":-74.027699},"441 Elizabeth Ave Ste 16, Somerset, NJ 08873-1219":{"lat":40.5297349,"lng":-74.5399285},"942 Route 376 Ste 9, Wappingers Falls, NY 12590-6484":{"lat":41.6079547,"lng":-73.8316388},"2875 Broadway Spc A, New York, NY 10025-7846":{"lat":40.8053475,"lng":-73.9663219},"3549 Broadway, New York, NY 10031-3203":{"lat":40.8267445,"lng":-73.9503472},"750 8th Ave, New York, NY 10036-0384":{"lat":40.7595658,"lng":-73.9879692},"162 Dyckman St, New York, NY 10040-1004":{"lat":40.8637801,"lng":-73.9263682},"10 W Westfield Ave Unit B, Roselle Park, NJ 07204-2290":{"lat":40.6647418,"lng":-74.2409816},"276B Dunns Mill Rd, Bordentown, NJ 08505-4748":{"lat":40.1325407,"lng":-74.7208375},"1922 Hooper Ave Unit 6, Toms River, NJ 08753-1609":{"lat":40.0166229,"lng":-74.1447576},"410 Glen Ave Ste 1, Berlin, NH 03570-1965":{"lat":44.455939,"lng":-71.1877939},"282 Berlin Mall Rd Ste 20, Berlin, VT 05602-8277":{"lat":44.2174153,"lng":-72.5646756},"62 D'Amante Drive, Concord, NH 03301":{"lat":43.2219318,"lng":-71.4880284},"1292 Hooksett Rd Ste L, Hooksett, NH 03106-1867":{"lat":43.0503763,"lng":-71.4389766},"210 Quality Dr Ste D3, Hooksett, NH 03106-2637":{"lat":43.0483157,"lng":-71.4596239},"218 Main St, Lancaster, NH 03584-3037":{"lat":44.5039055,"lng":-71.570216},"678 Meadow St Ste B, Littleton, NH 03561-3630":{"lat":44.3043286,"lng":-71.8044309},"225 Main St, Mexico, ME 04257-1673":{"lat":44.553876,"lng":-70.5376649},"65 Northgate Plz Ste 12, Morrisville, VT 05661-5900":{"lat":44.5715404,"lng":-72.5940031},"62 Commons Dr Ste 45, Newport, VT 05855-4534":{"lat":44.9369,"lng":-72.2048},"1995 Route 16, Center Ossipee, NH 03814":{"lat":43.7501487,"lng":-71.1380316},"11 Plaistow Rd Ste C, Plaistow, NH 03865":{"lat":42.8175002,"lng":-71.1022178},"1 Essex Dr Unit 4, Raymond, NH 03077-2607":{"lat":43.0340942,"lng":-71.1629258},"225 Dorset St Spc D, South Burlington, VT 05403-6203":{"lat":44.4629361,"lng":-73.1815019},"430 Railroad St Ste 1, Saint Johnsbury, VT 05819-1693":{"lat":44.4187787,"lng":-72.0154707},"318 Oswego Street, Liverpool, NY 13088-5517":{"lat":43.1017575,"lng":-76.2024949},"16308 Jamaica Ave, Jamaica, NY 11432-4912":{"lat":40.7272166,"lng":-73.7138399},"1 Freeport Village Sta Ste 309S, Freeport, ME 04032-1555":{"lat":43.8567,"lng":-70.1025},"5100 Kings Plz Spc 2240, Brooklyn, NY 11234-7223":{"lat":40.610023,"lng":-73.9202098},"1300 Springfield Ave, New Providence, NJ 07974-2901":{"lat":40.705971,"lng":-74.406203},"141 8th Ave, New York, NY 10011-5113":{"lat":40.741661,"lng":-74.0013867},"1430 2nd Avenue, New York, NY 10021-3313":{"lat":40.7704197,"lng":-73.9570606},"2043B Broadway, New York, NY 10023-3702":{"lat":40.7791858,"lng":-73.9819431},"2657 Broadway, New York, NY 10025-5024":{"lat":40.7978619,"lng":-73.9697878},"313 1st Ave, New York, NY 10003-2913":{"lat":40.7340179,"lng":-73.9808503},"600 6th Ave, New York, NY 10011-2034":{"lat":40.7394173,"lng":-73.9951134},"996 1st Ave, New York, NY 10022-4105":{"lat":40.7567681,"lng":-73.963819},"237 Bleecker St, New York, NY 10014-4438":{"lat":40.730657,"lng":-74.0025546},"1125 Lexington Ave, New York, NY 10075-0429":{"lat":40.7743673,"lng":-73.9591061},"424 Park Ave S, New York, NY 10016-8022":{"lat":40.7452485,"lng":-73.9822953},"1298 Fulton Street, Brooklyn, NY 11216-2101":{"lat":40.6801589,"lng":-73.9487796}};
+
+let storeGeoCache = {...STORE_COORDS};
 let storeCurrentView = 'list';   // 'list' | 'map'
 let storeCurrentSort = 'az';     // 'az' | 'borough' | 'near'
 let storeUserCoords  = null;
@@ -2141,8 +2144,9 @@ const GEO_CACHE_KEY  = 'storeGeoCache_v2';
 function loadGeoCache() {
   try {
     const c = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}');
-    storeGeoCache = (Date.now() - (c.ts || 0) < 30 * 24 * 3600 * 1000) ? (c.data || {}) : {};
-  } catch(e) { storeGeoCache = {}; }
+    const saved = (Date.now() - (c.ts || 0) < 30 * 24 * 3600 * 1000) ? (c.data || {}) : {};
+    storeGeoCache = { ...STORE_COORDS, ...saved };
+  } catch(e) { storeGeoCache = {...STORE_COORDS}; }
 }
 function saveGeoCache() {
   try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: storeGeoCache })); } catch(e) {}
@@ -2152,18 +2156,20 @@ function haversine(lat1, lng1, lat2, lng2) {
   const a = Math.sin(r(lat2-lat1)/2)**2 + Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(r(lng2-lng1)/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+function normalizeAddr(a) { return (a || '').replace(/\s+/g, ' ').trim(); }
 async function geocodeAddress(address) {
-  if (storeGeoCache[address]) return storeGeoCache[address];
+  const key = normalizeAddr(address);
+  if (storeGeoCache[key]) return storeGeoCache[key];
   try {
-    const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`, { headers: {'User-Agent':'NYC-Toolbox/1.0'} });
+    const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(key)}&format=json&limit=1&countrycodes=us`, { headers: {'User-Agent':'NYC-Toolbox/1.0'} });
     const json = await res.json();
-    if (json.length) { const c = {lat:parseFloat(json[0].lat),lng:parseFloat(json[0].lon)}; storeGeoCache[address]=c; return c; }
+    if (json.length) { const c = {lat:parseFloat(json[0].lat),lng:parseFloat(json[0].lon)}; storeGeoCache[key]=c; return c; }
   } catch(e) {}
   return null;
 }
 async function geocodeAll(onProgress) {
   loadGeoCache();
-  const uncached = storeData.filter(s => s.address && !storeGeoCache[s.address]);
+  const uncached = storeData.filter(s => s.address && !storeGeoCache[normalizeAddr(s.address)]);
   for (let i = 0; i < uncached.length; i++) {
     await geocodeAddress(uncached[i].address);
     onProgress && onProgress(i + 1, uncached.length);
@@ -2209,7 +2215,7 @@ async function setStoreSort(val) {
     sel.disabled = false;
     // Assign distances
     storeData.forEach(s => {
-      const c = storeGeoCache[s.address];
+      const c = storeGeoCache[normalizeAddr(s.address)];
       s._dist = c ? haversine(storeUserCoords.lat, storeUserCoords.lng, c.lat, c.lng) : Infinity;
     });
   }
@@ -2315,7 +2321,7 @@ async function initStoreMap() {
   storeMapPins = [];
 
   storeData.forEach(s => {
-    const coords = storeGeoCache[s.address];
+    const coords = storeGeoCache[normalizeAddr(s.address)];
     if (!coords) return;
     const nm  = s['name Non-WZ']||s.name||'';
     const sid = s['Store id']||'';
