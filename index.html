@@ -432,6 +432,11 @@ html, body {
   background-repeat: no-repeat; background-position: right 8px center;
 }
 /* Map */
+.store-card-photo { width: 100%; height: 130px; object-fit: cover; border-radius: 14px 14px 0 0; display: block; background: var(--border); }
+.store-card-photo-wrap { position: relative; }
+.store-card-rating { position: absolute; bottom: 8px; left: 10px; background: rgba(0,0,0,.62); backdrop-filter: blur(4px); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+.store-card-rating .rating-stars { color: #fbbf24; letter-spacing: -.5px; }
+.store-card-no-photo .store-card-header { border-radius: 14px 14px 0 0; }
 .store-map-wrap { padding: 0 20px 20px; display: none; }
 .store-map-wrap.visible { display: block; }
 #store-map { height: 480px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
@@ -1985,7 +1990,12 @@ html, body {
 <!-- ── APP LOGIC ── -->
 <script>
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwld9SpF-uphNvs9mQzwGzJ90MTg8CDLvtVYGb7RP_GcOR3lifsNTTdiHoIowigqYF4/exec';
+// ── Google Places API key — paste yours here to enable ratings + photos on cards
+// Get one at console.cloud.google.com → APIs & Services → Credentials
+// Enable "Places API (New)" on your project. Restrict to HTTP referrers for safety.
+const PLACES_API_KEY = 'AIzaSyDn0Q4BMU1YfGhDckp2GXkVzHUsc9kIBSY';
 let storeData = [];
+let storeGoogleData = {}; // normalizedAddress → { rating, photoUrl }
 let appInited = false;
 
 function initApp() {
@@ -2027,6 +2037,7 @@ async function fetchStores(forceRefresh = false) {
 
   // Show cached data instantly if available
   const cached = loadStoreCache();
+  loadGoogleDataCache(); // pre-seed from localStorage so cards show instantly
   if (cached && !forceRefresh) {
     storeData = cached.data;
     applyStoreSort();
@@ -2048,6 +2059,7 @@ async function fetchStores(forceRefresh = false) {
     storeData  = data.filter(s => s['name Non-WZ'] || s.name);
     saveStoreCache(storeData);
     applyStoreSort();
+    loadAllGoogleData(); // fetch ratings + photos in background (no-op if no API key)
     dot.className = 'sync-status-dot ok';
     const now = new Date();
     label.textContent = `Synced ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
@@ -2110,6 +2122,13 @@ function copyStoreAddress(btn) {
   });
 }
 
+function starsHTML(rating) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5 ? 1 : 0;
+  const empty = 5 - full - half;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(empty);
+}
+
 function storeCardHTML(s) {
   const nm  = s['name Non-WZ'] || s.name || '';
   const sid = s['Store id'] || '';
@@ -2119,10 +2138,23 @@ function storeCardHTML(s) {
   const dcwp = s.DCWP||s.dcwp||s['DCWP']||s['DCWP License']||s['DCWP #']||s['dcwp']||'';
   const distBadge = (s._dist !== undefined && s._dist !== Infinity)
     ? `<span class="store-dist-badge">${s._dist < 10 ? s._dist.toFixed(1) : Math.round(s._dist)} mi</span>` : '';
+
+  // Google Places data
+  const gd = storeGoogleData[normalizeAddr(s.address)];
+  const photoBlock = gd?.photoUrl
+    ? `<div class="store-card-photo-wrap">
+         <img class="store-card-photo" src="${gd.photoUrl}" alt="${nm}" loading="lazy" onerror="this.parentElement.style.display='none'">
+         ${gd.rating ? `<div class="store-card-rating"><span class="rating-stars">${starsHTML(gd.rating)}</span><span>${gd.rating.toFixed(1)}</span></div>` : ''}
+       </div>` : '';
+  // Rating without photo (shows inline in header)
+  const ratingInline = (!gd?.photoUrl && gd?.rating)
+    ? `<span style="margin-left:6px;font-size:11px;font-weight:700;color:#fbbf24">${starsHTML(gd.rating)} ${gd.rating.toFixed(1)}</span>` : '';
+
   return `
   <div class="store-card">
+    ${photoBlock}
     <div class="store-card-header">
-      <div class="store-name">${nm}${sid ? ' · ' + sid : ''}${distBadge}</div>
+      <div class="store-name">${nm}${sid ? ' · ' + sid : ''}${distBadge}${ratingInline}</div>
       <div class="store-actions">
         <a class="store-icon-btn" href="tel:${ph}" title="Call">📞</a>
         <a class="store-icon-btn map-btn" href="https://maps.google.com/?q=${addr}" target="_blank" title="Map">🗺️</a>
@@ -2175,6 +2207,64 @@ function loadGeoCache() {
 function saveGeoCache() {
   try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: storeGeoCache })); } catch(e) {}
 }
+
+// ── Google Places — ratings + photos ─────────────────────────────────────────
+const GPLACES_CACHE_KEY = 'storeGoogleData_v2';
+const GPLACES_TTL = 7 * 24 * 3600 * 1000; // 7 days
+
+function loadGoogleDataCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(GPLACES_CACHE_KEY) || '{}');
+    if (Date.now() - (c.ts || 0) < GPLACES_TTL) storeGoogleData = c.data || {};
+  } catch(e) {}
+}
+function saveGoogleDataCache() {
+  try { localStorage.setItem(GPLACES_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: storeGoogleData })); } catch(e) {}
+}
+
+async function fetchOnePlaceData(nm, address) {
+  const key = normalizeAddr(address);
+  if (storeGoogleData[key]?.fetched) return; // already fetched (even if no data)
+  try {
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': PLACES_API_KEY,
+        'X-Goog-FieldMask': 'places.id,places.rating,places.photos'
+      },
+      // Prefix "NY Connection" so Google finds our stores specifically
+      body: JSON.stringify({ textQuery: `NY Connection ${nm} ${address}`, maxResultCount: 1 })
+    });
+    const json = await res.json();
+    const place = json.places?.[0];
+    if (!place) { storeGoogleData[key] = { fetched: true, rating: null, photoUrl: null }; return; }
+    const rating   = place.rating || null;
+    const photoRef = place.photos?.[0]?.name || null;
+    // Use media URL directly as img src — browser follows the redirect to lh3.googleusercontent.com automatically
+    const photoUrl = photoRef
+      ? `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=600&key=${PLACES_API_KEY}`
+      : null;
+    storeGoogleData[key] = { fetched: true, rating, photoUrl };
+  } catch(e) { storeGoogleData[key] = { fetched: true, rating: null, photoUrl: null }; }
+}
+
+async function loadAllGoogleData() {
+  if (!PLACES_API_KEY) return;
+  loadGoogleDataCache();
+  const needed = storeData.filter(s => s.address && !(normalizeAddr(s.address) in storeGoogleData));
+  if (!needed.length) { applyStoreSort(); return; }
+  for (let i = 0; i < needed.length; i++) {
+    const s = needed[i];
+    await fetchOnePlaceData(s['name Non-WZ'] || s.name || '', s.address);
+    if (i < needed.length - 1) await new Promise(r => setTimeout(r, 150));
+    // Re-render every 10 stores so photos appear progressively
+    if ((i + 1) % 10 === 0) applyStoreSort();
+  }
+  saveGoogleDataCache();
+  applyStoreSort();
+}
+
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 3958.8, r = x => x * Math.PI / 180;
   const a = Math.sin(r(lat2-lat1)/2)**2 + Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(r(lng2-lng1)/2)**2;
